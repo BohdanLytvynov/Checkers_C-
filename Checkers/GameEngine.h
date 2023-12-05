@@ -24,7 +24,7 @@ namespace game_engine_core
 
 		GameObject& operator = (const GameObject& other) = delete;
 
-		void virtual Render(const console_graphics_utility &utility) = 0;
+		void virtual Render(console_graphics_utility &utility) = 0;
 
 #pragma region Getters
 
@@ -37,6 +37,8 @@ namespace game_engine_core
 		ushort GetBorderColor() const;
 
 		vector<ushort> GetPosition() const;
+
+		const char* GetChars() const;
 		
 		virtual bool isSelected() const;
 
@@ -54,6 +56,8 @@ namespace game_engine_core
 
 		void SetPosition(const vector<ushort> &v);
 		
+		//void SetChars(char* chars);
+
 		virtual void Select();
 
 		virtual void Deselct();
@@ -97,12 +101,16 @@ namespace game_engine_core
 
 	struct Cell : public GameObject
 	{
-		void Render(const console_graphics_utility& utility) override;
+		Cell(const ushort& width, const ushort& height, const WORD& backGround,
+			const WORD& border,
+			vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
+
+		void Render(console_graphics_utility& utility) override;
 	};
 
 	struct Checker : public Killable
 	{
-		void Render(const console_graphics_utility& utility) override;
+		void Render(console_graphics_utility& utility) override;
 	};
 }
 

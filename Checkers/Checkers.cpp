@@ -1,38 +1,55 @@
-﻿
-#include"pch.h"
-
+﻿#include"pch.h"
 #include"v_math.h"
+#include"GameEngine.h"
+#include"Console_graphics.h"
+
+
+
 
 int main()
 {
+    typedef unsigned short ushort;
+
     using namespace std;
 
     using namespace vector_math;
 
-    std::cout << "Hello World!\n";
+    using namespace game_engine_core;
 
-    std::cout << __cplusplus << std::endl;
+    using namespace console_graphics;
 
-    /*vector<int> v1(2,2);
-
-    vector<int> v2(1, 1);
-
-    auto v3 = v1 - v2;
-
-    v3 = v1 + v2;
-
-    v3 = v1 * 3;
-
-    auto l = v1.GetLength();
-
-    auto x = v2[0];
-
-    auto multiple = v2 * 3;
+    std::cout << "Checkers!\n";
     
-    v1 += v2;
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    v1 -= v2;
+    console_graphics_utility* cgu = console_graphics_utility::Init(console);
 
-    v1 *= 3;*/
+    /*GameObject* cell = new Cell(10,5, Colors::WhiteBack, Colors::BLACK | Colors::LIGHTGRAYBack,
+        vector<ushort>(2,2));
+
+    cell->Render(*cgu);
+
+    delete cell;*/
+
+    //Try to draw a circle
+
+    int s = 0;
+
+    int end = 360;
+
+    vector<ushort> pos;
+
+    while (s != end)
+    {
+        pos.SetX(std::cos(s * (M_PI/180 )) + 4);
+
+        pos.SetY(std::sin(s * (M_PI/180)) + 4);
+
+        cgu->SetCursorPosition(pos);
+
+        cgu->Print("*");
+
+        s++;
+    }
 }
 

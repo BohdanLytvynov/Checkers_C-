@@ -95,16 +95,16 @@ namespace console_graphics
 		
 		void PrintAtCenter(std::string s, WORD foreGround = console_graphics::Colors::White, ushort offset = 0);
 
-		static console_graphics_utility* Init(HANDLE *consoleHandle, 
+		static console_graphics_utility* Init(const HANDLE &consoleHandle, 
 			WORD defColor = console_graphics::Colors::White);
 		
 	private:
 
 		static bool init;
 
-		console_graphics_utility(HANDLE* consoleHandle, WORD defColor);
+		console_graphics_utility(const HANDLE& consoleHandle, WORD defColor);
 
-		HANDLE* m_consoleHandle;
+		HANDLE m_consoleHandle;
 
 		vector<ushort> m_position;
 

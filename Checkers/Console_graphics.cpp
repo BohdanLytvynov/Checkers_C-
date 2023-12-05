@@ -81,7 +81,7 @@ WORD console_graphics::Colors::ORANGEBack = BACKGROUND_RED | BACKGROUND_GREEN;
 
 #pragma region Private Ctor
 
-console_graphics::console_graphics_utility::console_graphics_utility(HANDLE* consoleHandle, WORD defColor)
+console_graphics::console_graphics_utility::console_graphics_utility(const HANDLE& consoleHandle, WORD defColor)
 	:m_position(), m_consoleHandle(consoleHandle), m_defColor(defColor)
 {
 	CONSOLE_SCREEN_BUFFER_INFO consoleBuf;
@@ -99,7 +99,7 @@ console_graphics::console_graphics_utility::console_graphics_utility(HANDLE* con
 #pragma region Functions
 
 console_graphics::console_graphics_utility* 
-console_graphics::console_graphics_utility::Init(HANDLE* consoleHandle, WORD defColor)
+console_graphics::console_graphics_utility::Init(const HANDLE& consoleHandle, WORD defColor)
 {
 	if (!init)
 	{
