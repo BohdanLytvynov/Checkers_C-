@@ -102,7 +102,39 @@ namespace vector_math
 
 		bool operator != (const vector<T>& other)
 		{
-			return !((*this) == other)
+			return !((*this) == other);
+		}
+
+		bool operator < (const vector<T> other)
+		{
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
+				return this->GetLength() < other.GetLength();
+			
+			return false;
+		}
+
+		bool operator > (const vector<T> other)
+		{
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
+				return this->GetLength() > other.GetLength();			
+
+			return false;
+		}
+
+		bool operator >= (const vector<T> other)
+		{
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
+				return this->GetLength() >= other.GetLength();			
+
+			return false;
+		}
+
+		bool operator <= (const vector<T> other)
+		{
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
+				return this->GetLength() <= other.GetLength();			
+
+			return false;
 		}
 
 #pragma endregion
