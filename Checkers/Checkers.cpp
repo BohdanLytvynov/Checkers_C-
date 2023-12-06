@@ -23,33 +23,16 @@ int main()
     HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 
     console_graphics_utility* cgu = console_graphics_utility::Init(console);
+    
+    CellBuildingOptions cellOpt = CellBuildingOptions(10,5);
 
-    /*GameObject* cell = new Cell(10,5, Colors::WhiteBack, Colors::BLACK | Colors::LIGHTGRAYBack,
-        vector<ushort>(2,2));
+    CheckerBuildingOptions checkOpt = CheckerBuildingOptions();
 
-    cell->Render(*cgu);
+    game_engine_core::GameController* gc = GameController::Initialize(cgu, vector<ushort>(1, 3),
+        &cellOpt, &checkOpt);
+   
+    gc->DrawBoard();
 
-    delete cell;*/
-
-    //Try to draw a circle
-
-    int s = 0;
-
-    int end = 360;
-
-    vector<ushort> pos;
-
-    while (s != end)
-    {
-        pos.SetX(std::cos(s * (M_PI/180 )) + 4);
-
-        pos.SetY(std::sin(s * (M_PI/180)) + 4);
-
-        cgu->SetCursorPosition(pos);
-
-        cgu->Print("*");
-
-        s++;
-    }
+   
 }
 
