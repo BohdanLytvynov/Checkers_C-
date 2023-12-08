@@ -79,12 +79,12 @@ ushort game_engine_core::GameObject::GetHeight() const
 	return m_height;
 }
 
-ushort game_engine_core::GameObject::GetBackColor() const
+WORD game_engine_core::GameObject::GetBackColor() const
 {
 	return m_backGround;
 }
 
-ushort game_engine_core::GameObject::GetBorderColor() const
+WORD game_engine_core::GameObject::GetBorderColor() const
 {
 	return m_border;
 }
@@ -383,20 +383,42 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 
 #pragma region Ctor
 
-game_engine_core::Checker::Checker() : Killable() {}
+game_engine_core::Checker::Checker() : Killable(), m_HorbaseLength(2), m_VertBaseLength(2),
+m_isDamka(false) {}
 
 game_engine_core::Checker::Checker(const ushort& width, const ushort& height, const WORD& backGround,
 	const WORD& border,
-	vector<ushort> position, ushort baseLength, char* charsToDraw, size_t charsToDrawSize)
+	vector<ushort> position, ushort HorbaseLength, ushort VertbaseLength, char* charsToDraw, size_t charsToDrawSize)
 	: Killable(width, height, backGround, border, position, charsToDraw, charsToDrawSize),
-	m_baseLength(baseLength)
+	m_HorbaseLength(HorbaseLength), m_VertBaseLength(VertbaseLength), m_isDamka(false)
 {
-	
+	char* ptr = nullptr;
+
+	if (charsToDraw == nullptr && charsToDrawSize == 0)
+	{
+		this->SetCharsToDrawSize(2);
+		ptr = new char[this->GetCharsToDrawSize()];
+
+		ptr[0] = '*'; //Checker filler
+		ptr[1] = ' '; //Damka empty filler
+	}
+	else
+	{
+		ptr = charsToDraw;
+
+		this->SetCharsToDrawSize(charsToDrawSize);
+	}
+
+	this->SetChars(ptr);
 }
 
 game_engine_core::Checker::Checker(const Checker& other) : Killable(other)
 {
-	m_baseLength = other.m_baseLength;
+	m_HorbaseLength = other.m_HorbaseLength;
+
+	m_VertBaseLength = other.m_VertBaseLength;
+
+	m_isDamka = other.m_isDamka;
 }
 
 #pragma endregion
@@ -407,7 +429,11 @@ game_engine_core::Checker& game_engine_core::Checker::operator=(const Checker& o
 {
 	this->Killable::operator=(other);
 
-	m_baseLength = other.m_baseLength;
+	m_HorbaseLength = other.m_HorbaseLength;
+
+	m_VertBaseLength = other.m_VertBaseLength;
+
+	m_isDamka = other.m_isDamka;
 
 	return *this;
 }
@@ -417,8 +443,16 @@ game_engine_core::Checker& game_engine_core::Checker::operator=(const Checker& o
 
 #pragma region Functions
 
+void game_engine_core::Checker::MakeDamka()
+{
+	m_isDamka = true;
+}
+
 void game_engine_core::Checker::Render(console_graphics::console_graphics_utility& utility)
 {
+	if (!this->isAlive())
+		return;
+
 	auto pos = this->GetPosition();
 
 	auto width = this->GetWidth();
@@ -428,21 +462,77 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 	auto back = this->GetBackColor();
 
 	auto border = this->GetBorderColor();
-			
-	if (width % 2 == 0)//width is even
+				
+	//1) Calc 2 hor and vert midle elements
+
+	size_t Hormid1 = width / 2;
+
+	size_t Hormid2 = Hormid1 + m_HorbaseLength - 1;
+
+	size_t Vertmid1 = height / 2;
+
+	size_t Vertmid2 = Vertmid1 + m_VertBaseLength - 1;
+	
+	bool shouldPrint = false;
+
+	ushort last1;
+
+	ushort last2;
+
+	ushort tempi = 0;
+
+	for (size_t i = 1; i < height - 1; i++)
 	{
-		if (m_baseLength % 2 == 0) { return; }
+		for (size_t j = 1; j < width - 1; j++)
+		{
+			utility.SetCursorPosition(pos + vector<ushort> (j, i));
+
+			if (i < Vertmid1 && j >= (Hormid1 - i - 1) && j <= (Hormid2 + i - 1) )
+			{
+				last1 = Hormid1 - i - 1;
+
+				last2 = Hormid2 + i - 1;
+
+				if (!m_isDamka)//Ordinary Checker
+				{
+					utility.Print(*this->GetChars(), back | border);
+				}
+				else  //Checker is Damka
+				{
+					if (i >= (Vertmid1 - 1) && (j > last1  && j  < last2 ))
+					{
+						utility.Print(*(this->GetChars() + 1), console_graphics::Colors::BLACKBack);
+					}
+					else
+					{
+						utility.Print(*(this->GetChars()), back | border);
+					}
+				}
+												
+				tempi = i;
+			}
+			if (i >= Vertmid1 && i < Vertmid2 && j >= last1 && j <= last2)
+			{					
+				if (!m_isDamka)
+				{
+					utility.Print(*this->GetChars(), back | border);
+				}
+				else if (j > last1 && j < last2)
+				{
+					utility.Print(*(this->GetChars() + 1), console_graphics::Colors::BLACKBack);
+				}
+				else
+				{
+					utility.Print(*(this->GetChars()), back | border);
+				}
+												
+			}
+			else if (i >= Vertmid2 && j >= (last1 + tempi - 1) && j <= (last2 - tempi + 1))
+			{
+				utility.Print(*this->GetChars(), back | border);
+			}										
+		}
 	}
-	else
-	{
-		if (m_baseLength % 2 != 0) { return; }
-	}
-
-	//1) Calc 1 midle elemet
-
-	size_t mid1 = width / 2;
-
-	size_t mid2 = mid1 + m_baseLength - 1;
 }
 
 #pragma endregion

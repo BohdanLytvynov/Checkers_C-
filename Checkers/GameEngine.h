@@ -36,9 +36,9 @@ namespace game_engine_core
 
 		ushort GetHeight() const;
 
-		ushort GetBackColor() const;
+		WORD GetBackColor() const;
 
-		ushort GetBorderColor() const;
+		WORD GetBorderColor() const;
 
 		vector<ushort> GetPosition() const;
 
@@ -136,16 +136,23 @@ namespace game_engine_core
 
 		Checker(const ushort& width, const ushort& height, const WORD& backGround,
 			const WORD& border,
-			vector<ushort> position, ushort baseLength, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
+			vector<ushort> position, ushort HorBaseLength = 2, ushort VertBaseLength = 2,
+			char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		Checker(const Checker& other);
 		
 		void Render(console_graphics_utility& utility) override;
 
+		void MakeDamka();
+
 		Checker& operator = (const Checker& other);
 
 	private:
-		ushort m_baseLength;
+		ushort m_HorbaseLength;
+
+		ushort m_VertBaseLength;
+
+		bool m_isDamka;
 	};
 
 	struct CellBuildingOptions
