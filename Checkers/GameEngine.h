@@ -16,14 +16,11 @@ namespace game_engine_core
 	{		
 		GameObject();
 
-		GameObject(const ushort& width, const ushort& height, const WORD& backGround,
-			const WORD& border,
+		GameObject(const ushort& width, const ushort& height, const WORD& backGround,			
 			vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		virtual ~GameObject();
-
-		//virtual void Initialize(const GameObject &other);
-
+		
 		GameObject(const GameObject& other);
 
 		GameObject& operator = (const GameObject& other);
@@ -37,9 +34,7 @@ namespace game_engine_core
 		ushort GetHeight() const;
 
 		WORD GetBackColor() const;
-
-		WORD GetBorderColor() const;
-
+		
 		vector<ushort> GetPosition() const;
 
 		char* GetChars() const;
@@ -59,9 +54,7 @@ namespace game_engine_core
 		void SetHeight(ushort height);
 
 		void SetBackColor(const WORD &backColor);
-
-		void SetBorderColor(const WORD& foreColor);
-
+		
 		void SetPosition(const vector<ushort> &v);
 		
 		void SetCharsToDrawSize(size_t size);
@@ -72,7 +65,6 @@ namespace game_engine_core
 
 #pragma endregion
 
-
 	private:
 
 		char* m_chars;
@@ -80,9 +72,7 @@ namespace game_engine_core
 		size_t m_charsToDrawSize;
 
 		WORD m_backGround;
-
-		WORD m_border;
-
+		
 		vector<ushort> m_position;
 
 		ushort m_width;
@@ -96,8 +86,7 @@ namespace game_engine_core
 	{
 		Killable();
 
-		Killable(const ushort& width, const ushort& height, const WORD& backGround,
-			const WORD& border,
+		Killable(const ushort& width, const ushort& height, const WORD& backGround,			
 			vector<ushort> position, char* charsToDraw, size_t charsToDrawSize);
 
 		Killable(const Killable& other);		
@@ -115,28 +104,50 @@ namespace game_engine_core
 		bool m_alive;
 	};
 
-	struct Cell : public GameObject
+	struct IObjectWithBorder
+	{
+		virtual WORD GetBorderColor() const = 0;
+
+		virtual void SetBorderColor(const WORD& foreGroundColor) = 0;
+	};
+
+	struct Cell : public GameObject, public IObjectWithBorder
 	{
 		Cell();
 
 		Cell(const ushort& width, const ushort& height, const WORD& backGround,
 			const WORD& border,
-			vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
+			vector<ushort> position, bool isWhite, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		void Render(console_graphics_utility& utility) override;
 
 		Cell(const Cell& other);
 
 		Cell& operator = (const Cell& other);
-	};
 
+		bool IsWhite() const;
+
+#pragma region IObject with border Interface
+
+		WORD GetBorderColor() const override;
+
+		void SetBorderColor(const WORD& borderColor) override;
+
+#pragma endregion
+
+
+	private:
+		bool m_isWhite;
+
+		WORD m_borderColor;
+	};
+	
 	struct Checker : public Killable
 	{
 		Checker();
 
-		Checker(const ushort& width, const ushort& height, const WORD& backGround,
-			const WORD& border,
-			vector<ushort> position, ushort HorBaseLength = 2, ushort VertBaseLength = 2,
+		Checker(const ushort& width, const ushort& height, const WORD& backGround,			
+			vector<ushort> position, bool isWhite, ushort HorBaseLength = 2, ushort VertBaseLength = 2,
 			char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		Checker(const Checker& other);
@@ -147,20 +158,24 @@ namespace game_engine_core
 
 		Checker& operator = (const Checker& other);
 
+		bool IsCheckerWhite() const;
+
 	private:
 		ushort m_HorbaseLength;
 
 		ushort m_VertBaseLength;
 
 		bool m_isDamka;
+
+		bool m_isWhite;		
 	};
 
-	struct CellBuildingOptions
+	struct CellBuildingOptions : public IObjectWithBorder
 	{				
-		CellBuildingOptions(ushort cellWidth, ushort cellHeight);
+		CellBuildingOptions(ushort cellWidth = 10, ushort cellHeight = 6);
 
-		CellBuildingOptions(ushort cellWidth, ushort cellHeight, WORD BlackColor,
-			WORD WhiteColor);
+		CellBuildingOptions(WORD BlackColor,
+			WORD WhiteColor, WORD borderColor, ushort cellWidth = 10, ushort cellHeight = 6);
 
 		const ushort& GetCellWidth() const;
 
@@ -170,6 +185,10 @@ namespace game_engine_core
 
 		const WORD& GetWhiteColor() const;
 
+		WORD GetBorderColor() const override;
+
+		void SetBorderColor(const WORD& borderColor) override;
+
 	private:
 		ushort m_cellWidth;
 
@@ -178,29 +197,42 @@ namespace game_engine_core
 		WORD m_blackColor;
 
 		WORD m_whiteColor;
+
+		WORD m_borderColor;
 	};
 
 	struct CheckerBuildingOptions
 	{		
 		CheckerBuildingOptions();
 
-		CheckerBuildingOptions(WORD whiteCheckerColor, WORD blackCheckerColor);
+		CheckerBuildingOptions(WORD whiteCheckerColor, WORD blackCheckerColor,			
+			ushort width = 10, ushort height = 6);
+		
+		const WORD& GetWhiteCheckerColor() const;
 
 		const WORD& GetBlackCheckerColor() const;
 
-		const WORD& GetWhiteCheckerColor() const;
+		const ushort& GetCheckerWidth() const;
+
+		const ushort& GetCheckerHeight() const;
 
 	private:
 		WORD m_blackCheckerColor;
 
 		WORD m_whiteCheckerColor;
+
+		ushort m_CheckerWidth;
+
+		ushort m_CheckerHeight;
+
 	};
 
 	struct GameController
 	{
 	public:		
-		void DrawBoard();
-		
+				
+		void InitGame();
+
 		static GameController* Initialize(console_graphics_utility* console_graphics_utility, 
 			vector<ushort> controllerPosition, CellBuildingOptions* cellbuildingOptions,
 			CheckerBuildingOptions *checkerBuildingOptions);
@@ -210,6 +242,11 @@ namespace game_engine_core
 		GameController& operator = (const GameController&) = delete;
 
 	private:
+
+		void DrawBoard();
+
+		void DrawCheckers();
+
 		GameController(console_graphics_utility *console_graphics_utility,
 			vector<ushort> BoardPosiion, CellBuildingOptions* cellbuildingOptions,
 			CheckerBuildingOptions* checkerBuildingOptions);
@@ -219,6 +256,11 @@ namespace game_engine_core
 		console_graphics_utility* m_console_graphics_utility;
 
 		Cell** m_board;
+
+		Checker* m_checkers;//Array that contains all of the checkers BLACK one at the start of the array,
+		//White one from the middle to the end.
+
+		const size_t m_checkersCount = 24;
 
 		static bool m_init;
 
