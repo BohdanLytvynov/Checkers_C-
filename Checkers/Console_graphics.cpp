@@ -123,6 +123,16 @@ vector_math::vector<ushort> console_graphics::console_graphics_utility::GetCurso
 	return m_position;
 }
 
+const ushort& console_graphics::console_graphics_utility::GetConsoleHeight() const
+{
+	return m_height;
+}
+
+const ushort& console_graphics::console_graphics_utility::GetConsoleWidth() const
+{
+	return m_width;
+}
+
 void console_graphics::console_graphics_utility::Print(char c, WORD foreGround)
 {
 	if (m_defColor == foreGround)	
@@ -165,6 +175,20 @@ void console_graphics::console_graphics_utility::PrintAtCenter(std::string s, WO
 
 		SetConsoleTextAttribute(m_consoleHandle, m_defColor);
 	}
+}
+
+void console_graphics::console_graphics_utility::Print(std::string s, vector<ushort> position, WORD foreGround)
+{
+	console_graphics::console_graphics_utility::SetCursorPosition(position);
+
+	Print(s, foreGround);
+}
+
+void console_graphics::console_graphics_utility::Print(char c, vector<ushort> position, WORD foreGround)
+{
+	console_graphics::console_graphics_utility::SetCursorPosition(position);
+
+	Print(c, foreGround);
 }
 
 #pragma endregion

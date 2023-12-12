@@ -95,6 +95,14 @@ namespace console_graphics
 		
 		void PrintAtCenter(std::string s, WORD foreGround = console_graphics::Colors::White, ushort offset = 0);
 
+		void Print(std::string s, vector<ushort> position, WORD foreGround = console_graphics::Colors::White);
+
+		void Print(char c, vector<ushort> position, WORD foreGround = console_graphics::Colors::White);
+
+		const ushort& GetConsoleWidth() const;
+
+		const ushort& GetConsoleHeight() const;
+
 		static console_graphics_utility* Init(const HANDLE &consoleHandle, 
 			WORD defColor = console_graphics::Colors::White);
 		

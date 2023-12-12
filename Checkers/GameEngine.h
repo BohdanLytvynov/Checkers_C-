@@ -16,7 +16,8 @@ namespace game_engine_core
 	{		
 		GameObject();
 
-		GameObject(const ushort& width, const ushort& height, const WORD& backGround,			
+		GameObject(const ushort& width, const ushort& height, const WORD& backGround,	
+			const WORD& selColor, 
 			vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		virtual ~GameObject();
@@ -43,6 +44,8 @@ namespace game_engine_core
 		
 		virtual bool isSelected() const;
 
+		WORD GetSelectionColor() const;
+			
 #pragma endregion
 
 #pragma region Setters
@@ -63,6 +66,8 @@ namespace game_engine_core
 
 		virtual void Deselct();
 
+		void SetSelectionColor(WORD selColor);
+
 #pragma endregion
 
 	private:
@@ -72,6 +77,8 @@ namespace game_engine_core
 		size_t m_charsToDrawSize;
 
 		WORD m_backGround;
+
+		WORD m_selectionColor;
 		
 		vector<ushort> m_position;
 
@@ -86,7 +93,8 @@ namespace game_engine_core
 	{
 		Killable();
 
-		Killable(const ushort& width, const ushort& height, const WORD& backGround,			
+		Killable(const ushort& width, const ushort& height, const WORD& backGround,	
+			const WORD& selColor,
 			vector<ushort> position, char* charsToDraw, size_t charsToDrawSize);
 
 		Killable(const Killable& other);		
@@ -111,12 +119,23 @@ namespace game_engine_core
 		virtual void SetBorderColor(const WORD& foreGroundColor) = 0;
 	};
 
-	struct Cell : public GameObject, public IObjectWithBorder
+	struct IBorderHighLightable
+	{
+		virtual const WORD& GetBorderSelectionColor() const = 0;
+
+		virtual void SetBorderSelectionColor(const WORD& borderSelColor) = 0;
+
+		virtual void HighlightBorder() = 0;
+
+		virtual void UnHighLightBorder() = 0;
+	};
+
+	struct Cell : public GameObject, public IObjectWithBorder, public IBorderHighLightable
 	{
 		Cell();
 
 		Cell(const ushort& width, const ushort& height, const WORD& backGround,
-			const WORD& border,
+			const WORD& border, const WORD& selColor, const WORD& bordeHighlightColor,
 			vector<ushort> position, bool isWhite, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		void Render(console_graphics_utility& utility) override;
@@ -135,18 +154,34 @@ namespace game_engine_core
 
 #pragma endregion
 
+#pragma region IBorder Highlightable Interface
+
+		const WORD& GetBorderSelectionColor() const override;
+
+		void SetBorderSelectionColor(const WORD& borderSelColor) override;
+
+		void HighlightBorder() override;
+
+		void UnHighLightBorder() override;
+
+#pragma endregion
+
 
 	private:
 		bool m_isWhite;
 
 		WORD m_borderColor;
+
+		WORD m_BorderHighlightColor;
+
+		bool m_borderHighLight;
 	};
 	
 	struct Checker : public Killable
 	{
 		Checker();
 
-		Checker(const ushort& width, const ushort& height, const WORD& backGround,			
+		Checker(const ushort& width, const ushort& height, const WORD& backGround, const WORD& selColor,			
 			vector<ushort> position, bool isWhite, ushort HorBaseLength = 2, ushort VertBaseLength = 2,
 			char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
@@ -175,7 +210,9 @@ namespace game_engine_core
 		CellBuildingOptions(ushort cellWidth = 10, ushort cellHeight = 6);
 
 		CellBuildingOptions(WORD BlackColor,
-			WORD WhiteColor, WORD borderColor, ushort cellWidth = 10, ushort cellHeight = 6);
+			WORD WhiteColor, WORD borderColor, 
+			WORD borderHighLightColor, WORD SelColor,
+			ushort cellWidth = 10, ushort cellHeight = 6);
 
 		const ushort& GetCellWidth() const;
 
@@ -189,7 +226,12 @@ namespace game_engine_core
 
 		void SetBorderColor(const WORD& borderColor) override;
 
+		const WORD& GetSelectionColor() const;
+
+		const WORD& GetBorderHighlightColor() const;
+
 	private:
+
 		ushort m_cellWidth;
 
 		ushort m_cellHeight;
@@ -199,18 +241,25 @@ namespace game_engine_core
 		WORD m_whiteColor;
 
 		WORD m_borderColor;
+
+		WORD m_SelectionColor;
+
+		WORD m_BorderHighlightColor;
 	};
 
 	struct CheckerBuildingOptions
 	{		
 		CheckerBuildingOptions();
 
-		CheckerBuildingOptions(WORD whiteCheckerColor, WORD blackCheckerColor,			
+		CheckerBuildingOptions(WORD whiteCheckerColor, WORD blackCheckerColor,	
+			WORD selectionColor,
 			ushort width = 10, ushort height = 6);
 		
 		const WORD& GetWhiteCheckerColor() const;
 
 		const WORD& GetBlackCheckerColor() const;
+
+		const WORD& GetSelectionColor() const;
 
 		const ushort& GetCheckerWidth() const;
 
@@ -221,6 +270,8 @@ namespace game_engine_core
 
 		WORD m_whiteCheckerColor;
 
+		WORD m_SelectionColor;
+
 		ushort m_CheckerWidth;
 
 		ushort m_CheckerHeight;
@@ -230,8 +281,14 @@ namespace game_engine_core
 	struct GameController
 	{
 	public:		
+
+		//const size_t& GetCheckersCount() const;
+
+		void SelectChecker(bool whiteBlack, std::function<void()> PrintFunc = nullptr);
 				
-		void InitGame();
+		void HighLightPossibleTurns();
+
+		void Draw();
 
 		static GameController* Initialize(console_graphics_utility* console_graphics_utility, 
 			vector<ushort> controllerPosition, CellBuildingOptions* cellbuildingOptions,
@@ -242,6 +299,10 @@ namespace game_engine_core
 		GameController& operator = (const GameController&) = delete;
 
 	private:
+		
+		GameObject& FindObject();//??
+
+
 
 		void DrawBoard();
 
@@ -255,20 +316,27 @@ namespace game_engine_core
 		
 		console_graphics_utility* m_console_graphics_utility;
 
+		char* m_controls;
+
 		Cell** m_board;
 
 		Checker* m_checkers;//Array that contains all of the checkers BLACK one at the start of the array,
 		//White one from the middle to the end.
 
+		Checker* m_selectedChecker;
+
 		const size_t m_checkersCount = 24;
 
 		static bool m_init;
+
+		static vector<short> m_dirVectors [4];
 
 		vector<ushort> m_position;
 
 		CellBuildingOptions* m_cellBuildingOptions;
 
 		CheckerBuildingOptions* m_checkerBuildingOpions;
+
 	};	
 }
 
