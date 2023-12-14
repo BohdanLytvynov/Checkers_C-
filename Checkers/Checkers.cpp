@@ -36,7 +36,7 @@ int main()
 
 	bool whiteBlack = true;
 
-	vector<ushort> CheckerBoardPosition = vector_math::vector<ushort>(5, 1);
+	vector_math::vector<ushort> CheckerBoardPosition = vector_math::vector<ushort>(5, 1);
 
 	ushort consoleHeight = cgu->GetConsoleHeight();
 
@@ -46,7 +46,7 @@ int main()
 
 	ushort temp = 30;
 
-	vector<ushort> textPos = vector_math::vector<ushort>(CheckerBoardLength + CheckerBoardPosition[0] +
+	vector_math::vector<ushort> textPos = vector_math::vector<ushort>(CheckerBoardLength + CheckerBoardPosition[0] +
 		temp, consoleHeight / 2);
 
 	CellBuildingOptions cellOpt = CellBuildingOptions();
@@ -74,7 +74,7 @@ int main()
 			textPos + vector_math::vector<ushort>(0, 1));
 
 		cgu->Print("After you selected the propriate checker press Enter.",
-			textPos + vector<ushort>(0, 2));
+			textPos + vector_math::vector<ushort>(0, 2));
 	};
 
 #pragma endregion

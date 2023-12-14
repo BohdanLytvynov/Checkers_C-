@@ -7,14 +7,14 @@
 
 //char[5] {186, 201, 205, 187, 188}, 5
 
-game_engine_core::GameObject::GameObject(): GameObject(0,0, console_graphics::Colors::WhiteBack, 
+game_engine_core::GameObject::GameObject() : GameObject(0, 0, console_graphics::Colors::WhiteBack,
 	console_graphics::Colors::ORANGEBack,
-	vector_math::vector<ushort>(0,0), nullptr, 0)
+	vector_math::vector<ushort>(0, 0), nullptr, 0)
 {
 
 }
 
-game_engine_core::GameObject::GameObject(const ushort& width, const ushort& height, 
+game_engine_core::GameObject::GameObject(const ushort& width, const ushort& height,
 	const WORD& backGround,
 	const WORD& selColor,
 	vector<ushort> position, char* charsToDraw, size_t charsToDrawSize) :
@@ -23,13 +23,13 @@ game_engine_core::GameObject::GameObject(const ushort& width, const ushort& heig
 	m_selected(false), m_chars(charsToDraw), m_charsToDrawSize(charsToDrawSize),
 	m_selectionColor(selColor)
 {
-	
+
 }
 
 game_engine_core::GameObject::GameObject(const GameObject& other)
 {
 	m_width = other.m_width;
-	m_height = other.m_height;	
+	m_height = other.m_height;
 	m_backGround = other.m_backGround;
 	m_selected = other.m_selected;
 	m_position = other.m_position;
@@ -49,7 +49,7 @@ game_engine_core::GameObject::GameObject(const GameObject& other)
 	}
 }
 
-game_engine_core::GameObject::~GameObject() 
+game_engine_core::GameObject::~GameObject()
 {
 	delete[] m_chars;
 }
@@ -126,7 +126,7 @@ void game_engine_core::GameObject::SetBackColor(const WORD& backColor)
 	m_backGround = backColor;
 }
 
-void game_engine_core::GameObject::SetPosition(const vector<ushort> &v)
+void game_engine_core::GameObject::SetPosition(const vector<ushort>& v)
 {
 	m_position = v;
 }
@@ -157,7 +157,7 @@ game_engine_core::GameObject& game_engine_core::GameObject::operator=(const Game
 	m_height = other.m_height;
 
 	m_backGround = other.m_backGround;
-	
+
 	m_position = other.m_position;
 
 	m_charsToDrawSize = other.m_charsToDrawSize;
@@ -176,7 +176,7 @@ game_engine_core::GameObject& game_engine_core::GameObject::operator=(const Game
 		*(m_chars + i) = *(other.m_chars + i);
 	}
 
-	return *this;	
+	return *this;
 }
 
 #pragma endregion
@@ -190,7 +190,7 @@ game_engine_core::GameObject& game_engine_core::GameObject::operator=(const Game
 
 game_engine_core::Killable::Killable() : GameObject(), m_alive(true) {}
 
-game_engine_core::Killable::Killable(const ushort& width, const ushort& height, const WORD& backGround,	
+game_engine_core::Killable::Killable(const ushort& width, const ushort& height, const WORD& backGround,
 	const WORD& selColor,
 	vector<ushort> position, char* charsToDraw, size_t charsToDrawSize) :
 	GameObject(width, height, backGround, selColor, position, charsToDraw, charsToDrawSize),
@@ -199,7 +199,7 @@ game_engine_core::Killable::Killable(const ushort& width, const ushort& height, 
 
 }
 
-game_engine_core::Killable::Killable(const Killable &other) : GameObject(other)
+game_engine_core::Killable::Killable(const Killable& other) : GameObject(other)
 {
 	m_alive = other.m_alive;
 }
@@ -241,7 +241,7 @@ game_engine_core::Killable& game_engine_core::Killable::operator=(const Killable
 
 #pragma region Ctor
 
-game_engine_core::Cell::Cell() : GameObject(), m_isWhite(false), 
+game_engine_core::Cell::Cell() : GameObject(), m_isWhite(false),
 m_borderColor(console_graphics::Colors::LIGHTGRAYBack | console_graphics::Colors::BLACK),
 m_BorderHighlightColor(console_graphics::Colors::GREENBack), m_borderHighLight(false) {}
 
@@ -256,7 +256,7 @@ game_engine_core::Cell::Cell(const ushort& width, const ushort& height, const WO
 
 	if (charsToDraw == nullptr && charsToDrawSize == 0)
 	{
-		this->SetCharsToDrawSize(6);		
+		this->SetCharsToDrawSize(6);
 		ptr = new char[this->GetCharsToDrawSize()];
 
 		ptr[0] = (char)201; //left upper corner symbol
@@ -278,7 +278,7 @@ game_engine_core::Cell::Cell(const ushort& width, const ushort& height, const WO
 
 game_engine_core::Cell::Cell(const Cell& other) :
 	GameObject(other), m_isWhite(other.m_isWhite), m_borderColor(other.m_borderColor),
-m_BorderHighlightColor(other.m_BorderHighlightColor), m_borderHighLight(other.m_borderHighLight) {}
+	m_BorderHighlightColor(other.m_BorderHighlightColor), m_borderHighLight(other.m_borderHighLight) {}
 
 #pragma endregion
 
@@ -349,7 +349,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 	ushort width = this->GetWidth();
 
 	ushort height = this->GetHeight();
-	
+
 	char selectedSymbol;
 
 	WORD color;
@@ -371,10 +371,10 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 			//Corner Symbol Switcher
 			if (i == 0 && j == 0)//Left upper corner
 			{
-				selectedSymbol = *symbols;	
+				selectedSymbol = *symbols;
 				dec_symbol = true;
 			}
-			else if(i == 0 && j == width - 1)//Right upper corner
+			else if (i == 0 && j == width - 1)//Right upper corner
 			{
 				selectedSymbol = *(symbols + 1);
 				dec_symbol = true;
@@ -412,7 +412,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 				selectedSymbol = *(symbols + 5);
 				dec_symbol = true;
 			}
-			if(!dec_symbol) //Filler
+			if (!dec_symbol) //Filler
 			{
 				selectedSymbol = ' ';
 				color = backGroundColor;
@@ -420,7 +420,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 
 			utility.Print(selectedSymbol, color);
 
- 		}
+		}
 	}
 }
 
@@ -521,7 +521,7 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 	auto back = this->GetBackColor();
 
 	auto selColor = this->GetSelectionColor();
-					
+
 	//1) Calc 2 hor and vert midle elements
 
 	size_t Hormid1 = width / 2;
@@ -531,7 +531,7 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 	size_t Vertmid1 = height / 2;
 
 	size_t Vertmid2 = Vertmid1 + m_VertBaseLength - 1;
-	
+
 	bool shouldPrint = false;
 
 	ushort last1;
@@ -544,9 +544,9 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 	{
 		for (size_t j = 1; j < width - 1; j++)
 		{
-			utility.SetCursorPosition(pos + vector<ushort> (j, i));
+			utility.SetCursorPosition(pos + vector<ushort>(j, i));
 
-			if (i < Vertmid1 && j >= (Hormid1 - i - 1) && j <= (Hormid2 + i - 1) )
+			if (i < Vertmid1 && j >= (Hormid1 - i - 1) && j <= (Hormid2 + i - 1))
 			{
 				last1 = Hormid1 - i - 1;
 
@@ -554,11 +554,11 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 
 				if (!m_isDamka)//Ordinary Checker
 				{
-					utility.Print(*this->GetChars(), this->isSelected()? selColor : back);
+					utility.Print(*this->GetChars(), this->isSelected() ? selColor : back);
 				}
 				else  //Checker is Damka
 				{
-					if (i >= (Vertmid1 - 1) && (j > last1  && j  < last2 ))
+					if (i >= (Vertmid1 - 1) && (j > last1 && j < last2))
 					{
 						utility.Print(*(this->GetChars() + 1), console_graphics::Colors::BLACKBack);
 					}
@@ -567,11 +567,11 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 						utility.Print(*(this->GetChars()), this->isSelected() ? selColor : back);
 					}
 				}
-												
+
 				tempi = i;
 			}
 			if (i >= Vertmid1 && i < Vertmid2 && j >= last1 && j <= last2)
-			{					
+			{
 				if (!m_isDamka)
 				{
 					utility.Print(*this->GetChars(), this->isSelected() ? selColor : back);
@@ -584,12 +584,12 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 				{
 					utility.Print(*(this->GetChars()), this->isSelected() ? selColor : back);
 				}
-												
+
 			}
 			else if (i >= Vertmid2 && j >= (last1 + tempi - 1) && j <= (last2 - tempi + 1))
 			{
 				utility.Print(*this->GetChars(), this->isSelected() ? selColor : back);
-			}										
+			}
 		}
 	}
 }
@@ -613,7 +613,7 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 
 	m_controls[1] = 'd';
 
-	m_position = boardPosition;
+	m_Board_position = boardPosition;
 
 	m_cellBuildingOptions = cellbuildingOptions;
 
@@ -621,10 +621,10 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 
 	m_console_graphics_utility = utility;
 	//Initialization of the Board
-	m_board = new Cell* [8];
-			
+	m_board = new Cell * [8];
+
 	bool whiteBlack = true;
-	
+
 	auto Cellwidth = m_cellBuildingOptions->GetCellWidth();
 
 	auto Cellheight = m_cellBuildingOptions->GetCellHeight();
@@ -654,21 +654,21 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 	WORD CheckerWhiteColor = m_checkerBuildingOpions->GetWhiteCheckerColor();
 
 	vector<ushort> positionTemp;
-	
+
 	auto CheckerSelColor = m_checkerBuildingOpions->GetSelectionColor();
-	
+
 	size_t k = 0;//Variable to use in checkers array
 
 	for (size_t i = 0; i < 8; i++)
 	{
 		m_board[i] = new Cell[8];
-	
-		for (size_t j = 0; j < 8; j++)
-		{		
-			positionTemp = m_position + vector<ushort>(j * Cellwidth, i * Cellheight);
 
-			*(m_board[i] + j) = Cell( Cellwidth, Cellheight, 				
-				whiteBlack == true? CellWhiteColor : CellBlackColor,
+		for (size_t j = 0; j < 8; j++)
+		{
+			positionTemp = m_Board_position + vector<ushort>(j * Cellwidth, i * Cellheight);
+
+			*(m_board[i] + j) = Cell(Cellwidth, Cellheight,
+				whiteBlack == true ? CellWhiteColor : CellBlackColor,
 				CellBorderColor,
 				selColor, CellBorderHighlightColor,
 				positionTemp, whiteBlack);
@@ -682,21 +682,39 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 
 					k++;
 				}
-				else if(i >= (8 - 3))//Place white checkers 
+				else if (i >= (8 - 3))//Place white checkers 
 				{
 					*(m_checkers + k) = Checker(CheckerWidth, CheckerHeight,
 						CheckerWhiteColor, CheckerSelColor, positionTemp, true);
 
 					k++;
-				}				
+				}
 			}
-						
-			if(j != 8 -1)
-				whiteBlack = !whiteBlack;			
-		}		
+
+			if (j != 8 - 1)
+				whiteBlack = !whiteBlack;
+		}
 	}
 
-	//Initialization of the Checkers		
+	//Update dir Vectors magnitudes using a propriate cell size parametrs
+
+	short arr[2] = { Cellwidth, Cellheight };
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		m_dirVectors[i] = m_dirVectors[i] * arr;
+	}
+
+	for (size_t i = 0; i < 2; i++)
+	{
+		m_boardBasis[i] * arr;
+	}
+
+	//Calculate Width and Height Of the Board
+
+	m_boardWidth = 8 * Cellwidth;
+
+	m_boardHeight = 8 * Cellheight;
 }
 
 game_engine_core::GameController::~GameController()
@@ -715,11 +733,149 @@ game_engine_core::GameController::~GameController()
 
 #pragma region Functions
 
+game_engine_core::Cell* game_engine_core::GameController::FindCellUsingPosition(const vector<short>& positionVector)
+{
+	bool stop = false;
+
+	vector<ushort> position;
+
+	vector<short> pos;
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		for (size_t j = 0; j < 8; j++)
+		{
+			position = (m_board[i] + j)->GetPosition();
+
+			pos = vector<short>(position[0], position[1]);
+
+			if (pos == positionVector)
+				return (m_board[i] + j);
+		}
+	}
+
+	return nullptr;
+}
+
+game_engine_core::GameObject* game_engine_core::GameController::FindObjectUsingPosition(const vector<short>& positionVector, GameObject* ptr, size_t size)
+{
+	vector<ushort> Vector;
+	vector<short> shortvector;
+
+	for (size_t i = 0; i < size; i++)
+	{
+		if (ptr + i == nullptr)
+			break;
+
+		Vector = (ptr + i)->GetPosition();
+
+		shortvector = vector<short>(Vector[0], Vector[1]);
+
+		if (shortvector == positionVector)
+			return (ptr + i);
+	}
+
+	return nullptr;
+}
+
+void game_engine_core::GameController::HighlightPossibleTurnRecursive(const vector<short>& position, const vector<short>& dirVector = vector<short>())
+{
+	//Base cases
+
+#pragma region Near Border Cases
+
+	if (position["X"] < m_Board_position["X"] && position["Y"] < m_Board_position["Y"])//checker is about to cross Upper left corner
+	{
+		return;
+	}
+	else if (position["X"] < m_Board_position["X"] && position["Y"] >= m_Board_position["Y"] + m_boardHeight)//checker is about to cross Lower left corner
+	{
+		return;
+	}
+	else if (position["X"] > m_Board_position["X"] && position["Y"] < m_Board_position["Y"])//checker is about to cross Upper right corner
+	{
+		return;
+	}
+	else if (position["X"] >= m_Board_position["X"] + m_boardWidth && position["Y"] >= m_Board_position["Y"] + m_boardHeight)//checker is about to cross Lower right corner
+	{
+		return;
+	}
+
+#pragma region Borders of the board
+
+	else if (position["X"] < m_Board_position["X"] && position["Y"] >= m_Board_position["Y"])//Left vertical border
+	{
+		return;
+	}
+	else if (position["X"] >= m_Board_position["X"] && position["Y"] < m_Board_position["Y"])//Upper horizontal border
+	{
+		return;
+	}
+	else if (position["X"] >= m_Board_position["X"] + m_boardWidth && position["Y"] >= m_Board_position["Y"])//Right vertical border
+	{
+		return;
+	}
+	else if (position["X"] > m_Board_position["X"] && position["Y"] >= m_Board_position["Y"] + m_boardHeight)//Lower  Horizontal border
+	{
+		return;
+	}
+
+#pragma endregion
+
+
+#pragma endregion
+
+
+
+	if (auto cell = FindObjectUsingPosition(position, m_checkers, m_checkersCount) == nullptr)//Position of the empty cell (No checkers exists at this posVector)
+	{
+		if (m_selectedChecker->IsCheckerWhite() && ((dirVector * m_boardBasis[1]) < 0))//Move of the white checker
+		{
+			m_possibleTurns.Add(FindCellUsingPosition(position));//Add Cells To be Highlighted
+
+			return;
+		}
+		else if((dirVector * m_boardBasis[1]) > 0)//Move for the black checker
+		{
+			m_possibleTurns.Add(FindCellUsingPosition(position));//Add Cells To be Highlighted
+
+			return;
+		}		
+	}
+	else //Cell contains checker
+	{
+
+	}
+
+	HighlightPossibleTurnRecursive(position + m_dirVectors[0], m_dirVectors[0]);//Move leftUp
+	HighlightPossibleTurnRecursive(position + m_dirVectors[1], m_dirVectors[1]);//Move rightUp
+	HighlightPossibleTurnRecursive(position + m_dirVectors[2], m_dirVectors[2]);//Move leftDown
+	HighlightPossibleTurnRecursive(position + m_dirVectors[3], m_dirVectors[3]);//Move rightDown
+
+	size_t count = m_possibleTurns.GetCount();
+
+	for (size_t i = 0; i < count; i++)
+	{
+		m_possibleTurns[i]->HighlightBorder();
+	}
+}
+
 void game_engine_core::GameController::HighLightPossibleTurns()
 {
-	auto selectedCheckerPos = m_selectedChecker->GetPosition();
+	size_t count = m_possibleTurns.GetCount();
 
+	for (size_t i = 0; i < count; i++)
+	{
+		m_possibleTurns[i]->UnHighLightBorder();
+	}
 
+	m_possibleTurns.Clear();
+
+	vector<ushort> pos = m_selectedChecker->GetPosition();
+
+	vector<short> selectedCheckerPos = vector<short>(pos[0], pos[1]);
+
+	HighlightPossibleTurnRecursive(selectedCheckerPos);
 }
 
 void game_engine_core::GameController::Draw()
@@ -755,8 +911,8 @@ game_engine_core::GameController* game_engine_core::GameController::Initialize(c
 	CheckerBuildingOptions* checkerBuildingOptions)
 {
 	if (!m_init)
-	{		
-		static GameController gc(utility, controllerPosiion, cellbuildingOptions, 
+	{
+		static GameController gc(utility, controllerPosiion, cellbuildingOptions,
 			checkerBuildingOptions);
 
 		m_init = true;
@@ -766,24 +922,24 @@ game_engine_core::GameController* game_engine_core::GameController::Initialize(c
 }
 
 void game_engine_core::GameController::SelectChecker(bool whiteblack, std::function<void()> PrintFunc)
-	
-{		
+
+{
 	if (m_selectedChecker != nullptr)
-		if(m_selectedChecker->isSelected())
+		if (m_selectedChecker->isSelected())
 			m_selectedChecker->Deselct();
 
 	char input;
-	
+
 	size_t index = 0;
 
 	size_t start;
 
 	size_t end;
 
-	size_t mid = m_checkersCount/2; //11	
+	size_t mid = m_checkersCount / 2; //11	
 
 	if (!whiteblack)//Black
-	{		
+	{
 		start = 0;
 
 		index = start;
@@ -818,7 +974,7 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 		{
 			index -= 1;
 		}
-		else if(input == *(m_controls + 1))
+		else if (input == *(m_controls + 1))
 		{
 			index += 1;
 		}
@@ -826,13 +982,13 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 		if (m_selectedChecker != nullptr)
 			if (m_selectedChecker->isSelected())
 				m_selectedChecker->Deselct();
-		
+
 		if (index < start)
 			index = end;
 		else if (index > end)
-			index = start;		
+			index = start;
 
-	} while (input != '\r');	
+	} while (input != '\r');
 }
 
 
@@ -842,12 +998,18 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 
 bool game_engine_core::GameController::m_init = false;
 
-vector_math::vector<short> game_engine_core::GameController::m_dirVectors[4] = 
-{ 
+vector_math::vector<short> game_engine_core::GameController::m_dirVectors[4] =
+{
 	vector<short>(-1, 1), //left up
 	vector<short>(1, 1), //right up
 	vector<short>(-1, -1),//left down
 	vector<short>(1, -1) //right down
+};
+
+vector_math::vector<short> game_engine_core::GameController::m_boardBasis[2] =
+{
+	vector<short>(1, 0),
+	vector<short>(0, 1)
 };
 
 #pragma endregion
@@ -866,7 +1028,7 @@ game_engine_core::CellBuildingOptions::CellBuildingOptions(
 	m_cellWidth(width), m_cellHeight(height), m_blackColor(BlackColor), m_whiteColor(WhiteColor),
 	m_borderColor(borderColor), m_SelectionColor(selColor),
 	m_BorderHighlightColor(borderHighlightColor)
-	
+
 {}
 
 game_engine_core::CellBuildingOptions::CellBuildingOptions(ushort width, ushort height) :
@@ -928,12 +1090,12 @@ game_engine_core::CheckerBuildingOptions::CheckerBuildingOptions() :
 	CheckerBuildingOptions(console_graphics::Colors::WhiteBack,
 		console_graphics::Colors::BLACKBack, console_graphics::Colors::ORANGEBack)
 {}
-game_engine_core::CheckerBuildingOptions::CheckerBuildingOptions(WORD whiteCheckerColor, 
+game_engine_core::CheckerBuildingOptions::CheckerBuildingOptions(WORD whiteCheckerColor,
 	WORD blackCheckerColor, WORD SelectionColor,
-	ushort width, ushort height):	
+	ushort width, ushort height) :
 	m_blackCheckerColor(blackCheckerColor),
 	m_whiteCheckerColor(whiteCheckerColor),
-	m_CheckerWidth(width), m_CheckerHeight(height), 
+	m_CheckerWidth(width), m_CheckerHeight(height),
 	m_SelectionColor(SelectionColor)
 {}
 #pragma endregion

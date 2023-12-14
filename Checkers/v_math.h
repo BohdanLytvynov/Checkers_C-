@@ -48,6 +48,10 @@ namespace vector_math
 
 	};	
 
+#pragma endregion
+
+#pragma region Vector Declaretion
+
 	Tdecl
 		class vector : public ConsoleCoords<T>
 	{
@@ -79,8 +83,8 @@ namespace vector_math
 		/// Copy Ctor
 		/// </summary>
 		/// <param name="other">ref to Object source</param>
-		vector<T>(const vector<T>& other) : ConsoleCoords<T> (other) {}
-		
+		vector<T>(const vector<T>& other) : ConsoleCoords<T>(other) {}
+
 		vector<T>(const T x, const T y)
 		{
 			ConsoleCoords<T>::SetXY(x, y);
@@ -94,9 +98,9 @@ namespace vector_math
 
 		bool operator == (const vector<T>& other)
 		{
-			if (this->GetLength() == other.GetLength())			
+			if (this->GetLength() == other.GetLength())
 				return this->GetX() == other.GetX() && this->GetY() == other.GetY();
-			
+
 			return false;
 		}
 
@@ -107,32 +111,32 @@ namespace vector_math
 
 		bool operator < (const vector<T> other)
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() < other.GetLength();
-			
+
 			return false;
 		}
 
 		bool operator > (const vector<T> other)
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
-				return this->GetLength() > other.GetLength();			
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
+				return this->GetLength() > other.GetLength();
 
 			return false;
 		}
 
 		bool operator >= (const vector<T> other)
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
-				return this->GetLength() >= other.GetLength();			
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
+				return this->GetLength() >= other.GetLength();
 
 			return false;
 		}
 
 		bool operator <= (const vector<T> other)
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())			
-				return this->GetLength() <= other.GetLength();			
+			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
+				return this->GetLength() <= other.GetLength();
 
 			return false;
 		}
@@ -143,7 +147,7 @@ namespace vector_math
 
 		vector<T> operator + (const vector<T>& vector) const
 		{
-			return vector_math::vector<T>(this->GetX() + vector.GetX() , this->GetY() + vector.GetY());
+			return vector_math::vector<T>(this->GetX() + vector.GetX(), this->GetY() + vector.GetY());
 		}
 
 		vector<T>& operator += (const vector<T>& vector)
@@ -177,7 +181,12 @@ namespace vector_math
 			return *this;
 		}
 
-		explicit operator double () const
+		T operator * (const vector<T>& other) const
+		{
+			return this->DotProduct(other);
+		}
+
+		explicit operator double() const
 		{
 			return this->GetLength();
 		}
@@ -189,6 +198,11 @@ namespace vector_math
 			return *this;
 		}
 
+		vector<T> operator * (T multiplyers[2])
+		{
+			return this->MultiplyXYSeparetly(multiplyers);
+		}
+
 #pragma endregion
 
 #pragma region Math functions
@@ -198,23 +212,27 @@ namespace vector_math
 			return static_cast<double>(sqrtf(this->GetX() * this->GetX() + this->GetY() * this->GetY()));
 		}
 
-		T DotProduct(const vector<T> &vector) const
+		T DotProduct(const vector<T>& vector) const
 		{
 			return vector.GetX() * this->GetX() + vector.GetY() * this->GetY();
 		}
 
 		vector<T> Normalize()
 		{
-			T length = this->GetLength() > 1? this->GetLength() : 1;
+			T length = this->GetLength() > 1 ? this->GetLength() : 1;
 
 			return (*this) * length;
 		}
 
-		
+		vector<T> MultiplyXYSeparetly(T multiplyers[2])
+		{
+			return vector<T>(this->GetX() * multiplyers[0], this->GetY() * multiplyers[1]);
+		}
+
 
 #pragma endregion
 
-#pragma region Indexer
+#pragma region Indexers
 
 		T operator [] (const int index)
 		{
@@ -230,20 +248,67 @@ namespace vector_math
 			}
 		}
 
+		const T operator [] (const int index) const
+		{
+			switch (index)
+			{
+			case 0:
+				return this->GetX();
 
+			case 1:
+				return this->GetY();
+			default:
+				throw std::runtime_error("You are requesting to the dimension that doesn't exist!!!");
+			}
+		}
+
+		T operator [] (const std::string &axes)
+		{
+			if (axes == "X" || axes == "x")
+			{
+				return this->GetX();
+			}
+			else if (axes == "Y" || axes == "y")
+			{
+				return this->GetY();
+			}
+			else
+			{
+				throw std::runtime_error("You are requesting to the dimension that doesn't exist!!!");
+			}		
+		}
+
+		const T operator [] (const std::string &axes) const
+		{
+			if (axes == "X" || axes == "x")
+			{
+				return this->GetX();
+			}
+			else if (axes == "Y" || axes == "y")
+			{
+				return this->GetY();
+			}
+			else
+			{
+				throw std::runtime_error("You are requesting to the dimension that doesn't exist!!!");
+			}
+		}
 
 #pragma endregion
 
 
 #pragma endregion
-
 
 	};
+
+#pragma endregion
+
 }
 
 
 
-#pragma endregion
+
+
 
 
 #endif

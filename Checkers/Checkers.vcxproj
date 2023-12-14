@@ -147,6 +147,7 @@
     <ClInclude Include="Console_graphics.h" />
     <ClInclude Include="GameEngine.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="smart_array.h" />
     <ClInclude Include="v_math.h" />
     <ClInclude Include="v_mathBase.h" />
   </ItemGroup>

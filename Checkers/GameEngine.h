@@ -6,6 +6,7 @@ typedef unsigned short ushort;
 
 #include"v_math.h"
 #include"Console_graphics.h"
+#include"smart_array.h"
 
 namespace game_engine_core
 {	
@@ -281,9 +282,7 @@ namespace game_engine_core
 	struct GameController
 	{
 	public:		
-
-		//const size_t& GetCheckersCount() const;
-
+				
 		void SelectChecker(bool whiteBlack, std::function<void()> PrintFunc = nullptr);
 				
 		void HighLightPossibleTurns();
@@ -300,9 +299,11 @@ namespace game_engine_core
 
 	private:
 		
-		GameObject& FindObject();//??
+		Cell* FindCellUsingPosition(const vector<short>& positionVector);
 
+		GameObject* FindObjectUsingPosition(const vector<short>& positionVector, GameObject* ptr, size_t size);//??
 
+		void HighlightPossibleTurnRecursive(const vector<short> &position, const vector<short>& dirVector);
 
 		void DrawBoard();
 
@@ -314,6 +315,14 @@ namespace game_engine_core
 
 		~GameController();
 		
+		ushort m_boardWidth;
+
+		ushort m_boardHeight;
+
+		smart_array<Checker*> m_checkersToBeKilled;
+
+		smart_array<Cell*> m_possibleTurns;
+
 		console_graphics_utility* m_console_graphics_utility;
 
 		char* m_controls;
@@ -331,7 +340,9 @@ namespace game_engine_core
 
 		static vector<short> m_dirVectors [4];
 
-		vector<ushort> m_position;
+		static vector<short> m_boardBasis[2];
+
+		vector<ushort> m_Board_position;
 
 		CellBuildingOptions* m_cellBuildingOptions;
 
