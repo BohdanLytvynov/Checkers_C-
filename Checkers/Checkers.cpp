@@ -36,6 +36,8 @@ int main()
 
 	bool whiteBlack = true;
 
+	bool whiteBlack_Winner = false;
+
 	vector_math::vector<ushort> CheckerBoardPosition = vector_math::vector<ushort>(5, 1);
 
 	ushort consoleHeight = cgu->GetConsoleHeight();
@@ -56,38 +58,104 @@ int main()
 
 	game_engine_core::GameController* gc = GameController::Initialize(cgu, CheckerBoardPosition,
 		&cellOpt, &checkOpt);
-
-	char moveLeft = 'a';
-
-	char moveRight = 'd';
-
+	
 	char input;
-
-	auto PrintFunc = [cgu, textPos, whiteBlack]()
-	{
-		cgu->PrintAtCenter("<<<Checkers the Game>>>");
-
-		cgu->Print("Turn of:" + whiteBlack ? "white Checkers(Player 1)" : "black Checkers(Player 2)",
-			textPos);
-
-		cgu->Print("Pressing A D please select the checker you want to use for the turn.",
-			textPos + vector_math::vector<ushort>(0, 1));
-
-		cgu->Print("After you selected the propriate checker press Enter.",
-			textPos + vector_math::vector<ushort>(0, 2));
-	};
-
+	
 #pragma endregion
 
 #pragma region Game
 	
-	gc->SelectChecker(whiteBlack, PrintFunc);
+	do
+	{
+		gc->SelectChecker(whiteBlack, [cgu, textPos, whiteBlack]()
+			{
+				cgu->PrintAtCenter("<<<Checkers the Game>>>");
 
-	gc->HighLightPossibleTurns();
+				cgu->Print("Turn of:" + whiteBlack ? "white Checkers(Player 1)" : "black Checkers(Player 2)",
+					textPos);
 
-	whiteBlack = !whiteBlack;
+				cgu->Print("Pressing A D please chose the object you want to use for the turn.",
+					textPos + vector_math::vector<ushort>(0, 1));
 
+				cgu->Print("After you chose the propriate object press s.",
+					textPos + vector_math::vector<ushort>(0, 2));
+			} , [cgu, textPos, whiteBlack]()
+			{
+				cgu->PrintAtCenter("<<<Checkers the Game>>>");
 
+				cgu->Print("                                   ",
+					textPos);
+
+				cgu->Print("                                   ",
+					textPos + vector_math::vector<ushort>(0, 1));
+
+				cgu->Print("                                   ",
+					textPos + vector_math::vector<ushort>(0, 2));
+
+				cgu->Print("Selection done succesfuly!",
+					textPos);
+
+				cgu->Print("Press c to confirm your selection. ",
+					textPos + vector_math::vector<ushort>(0, 1));
+
+				cgu->Print("If you want to cancel move set press r!",
+					textPos + vector_math::vector<ushort>(0, 2));
+			});
+
+		gc->FindPossibleTurns();
+
+		gc->HighLightPossibleTurns();
+
+		gc->SelectMove([cgu, textPos, whiteBlack]()
+		{
+			cgu->PrintAtCenter("<<<Checkers the Game>>>");
+
+			cgu->Print("Turn of:" + whiteBlack ? "white Checkers(Player 1)" : "black Checkers(Player 2)",
+				textPos);
+
+			cgu->Print("Pressing A D please chose the object you want to use for the turn.",
+				textPos + vector_math::vector<ushort>(0, 1));
+
+			cgu->Print("After you chose the propriate object press s.",
+				textPos + vector_math::vector<ushort>(0, 2));
+		}, [cgu, textPos, whiteBlack]()
+		{
+			cgu->PrintAtCenter("<<<Checkers the Game>>>");
+
+			cgu->Print("                                   ",
+				textPos);
+
+			cgu->Print("                                   ",
+				textPos + vector_math::vector<ushort>(0, 1));
+
+			cgu->Print("                                   ",
+				textPos + vector_math::vector<ushort>(0, 2));
+
+			cgu->Print("Selection done succesfuly!",
+				textPos);
+
+			cgu->Print("Press c to confirm your selection. ",
+				textPos + vector_math::vector<ushort>(0, 1));
+
+			cgu->Print("If you want to cancel move set press r!",
+				textPos + vector_math::vector<ushort>(0, 2));
+		});
+
+		gc->Move();
+
+		gc->DeselectAllGameObjects();
+
+		whiteBlack = !whiteBlack;
+	} while (!gc->IsGameOver(whiteBlack_Winner));
+	
+	if (whiteBlack_Winner)
+	{
+		std::cout << "White checkers wins!" << endl;
+	}
+	else
+	{
+		std::cout << "Black checkers wins!" << endl;
+	}
 
 #pragma endregion   
 

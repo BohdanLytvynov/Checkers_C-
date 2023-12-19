@@ -358,6 +358,10 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 
 	bool dec_symbol = false;
 
+	bool selected = this->isSelected();
+
+	auto sel_Color = this->GetSelectionColor();
+
 	for (size_t i = 0; i < height; i++)
 	{
 		for (size_t j = 0; j < width; j++)
@@ -366,7 +370,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 
 			utility.SetCursorPosition(pos + vector<ushort>(j, i));
 
-			color = borderColor;
+			color = m_borderHighLight ? m_BorderHighlightColor : borderColor;
 
 			//Corner Symbol Switcher
 			if (i == 0 && j == 0)//Left upper corner
@@ -415,7 +419,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 			if (!dec_symbol) //Filler
 			{
 				selectedSymbol = ' ';
-				color = backGroundColor;
+				color = selected ? sel_Color : backGroundColor;
 			}
 
 			utility.Print(selectedSymbol, color);
@@ -496,6 +500,10 @@ game_engine_core::Checker& game_engine_core::Checker::operator=(const Checker& o
 
 
 #pragma region Functions
+bool game_engine_core::Checker::IsDamka() const
+{
+	return m_isDamka;
+}
 
 void game_engine_core::Checker::MakeDamka()
 {
@@ -509,8 +517,8 @@ bool game_engine_core::Checker::IsCheckerWhite() const
 
 void game_engine_core::Checker::Render(console_graphics::console_graphics_utility& utility)
 {
-	if (!this->isAlive())
-		return;
+	/*if (!this->isAlive())
+		return;*/
 
 	auto pos = this->GetPosition();
 
@@ -607,11 +615,17 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 	vector<ushort> boardPosition, CellBuildingOptions* cellbuildingOptions,
 	CheckerBuildingOptions* checkerBuildingOptions)
 {
-	m_controls = new char[2];
+	m_controls = new char[5];
 
-	m_controls[0] = 'a';
+	m_controls[0] = 'a';//Move selection left
 
-	m_controls[1] = 'd';
+	m_controls[1] = 'd';//Move selection right
+
+	m_controls[2] = 's';//Perform selection
+
+	m_controls[3] = 'c';//Confirm selection
+
+	m_controls[4] = 'r';//Abort
 
 	m_Board_position = boardPosition;
 
@@ -737,17 +751,13 @@ game_engine_core::Cell* game_engine_core::GameController::FindCellUsingPosition(
 {
 	bool stop = false;
 
-	vector<ushort> position;
-
 	vector<short> pos;
 
 	for (size_t i = 0; i < 8; i++)
 	{
 		for (size_t j = 0; j < 8; j++)
 		{
-			position = (m_board[i] + j)->GetPosition();
-
-			pos = vector<short>(position[0], position[1]);
+			pos = (m_board[i] + j)->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
 			if (pos == positionVector)
 				return (m_board[i] + j);
@@ -757,125 +767,469 @@ game_engine_core::Cell* game_engine_core::GameController::FindCellUsingPosition(
 	return nullptr;
 }
 
-game_engine_core::GameObject* game_engine_core::GameController::FindObjectUsingPosition(const vector<short>& positionVector, GameObject* ptr, size_t size)
+game_engine_core::Checker* game_engine_core::GameController::FindCheckerUsingPosition(const vector<short>& positionVector)
 {
-	vector<ushort> Vector;
 	vector<short> shortvector;
 
-	for (size_t i = 0; i < size; i++)
+	for (size_t i = 0; i < m_checkersCount; i++)
 	{
-		if (ptr + i == nullptr)
+		if (m_checkers + i == nullptr)
 			break;
 
-		Vector = (ptr + i)->GetPosition();
-
-		shortvector = vector<short>(Vector[0], Vector[1]);
+		shortvector = (m_checkers + i)->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
 		if (shortvector == positionVector)
-			return (ptr + i);
+			return (m_checkers + i);
+
+		int a;
 	}
 
 	return nullptr;
 }
 
-void game_engine_core::GameController::HighlightPossibleTurnRecursive(const vector<short>& position, const vector<short>& dirVector = vector<short>())
+bool game_engine_core::GameController::OutOfBorders(const vector<short>& position)
 {
-	//Base cases
-
 #pragma region Near Border Cases
 
 	if (position["X"] < m_Board_position["X"] && position["Y"] < m_Board_position["Y"])//checker is about to cross Upper left corner
 	{
-		return;
+		return true;
 	}
 	else if (position["X"] < m_Board_position["X"] && position["Y"] >= m_Board_position["Y"] + m_boardHeight)//checker is about to cross Lower left corner
 	{
-		return;
+		return true;
 	}
 	else if (position["X"] > m_Board_position["X"] && position["Y"] < m_Board_position["Y"])//checker is about to cross Upper right corner
 	{
-		return;
+		return true;
 	}
 	else if (position["X"] >= m_Board_position["X"] + m_boardWidth && position["Y"] >= m_Board_position["Y"] + m_boardHeight)//checker is about to cross Lower right corner
 	{
-		return;
+		return true;
 	}
+
+#pragma endregion
 
 #pragma region Borders of the board
 
 	else if (position["X"] < m_Board_position["X"] && position["Y"] >= m_Board_position["Y"])//Left vertical border
 	{
-		return;
+		return true;
 	}
 	else if (position["X"] >= m_Board_position["X"] && position["Y"] < m_Board_position["Y"])//Upper horizontal border
 	{
-		return;
+		return true;
 	}
 	else if (position["X"] >= m_Board_position["X"] + m_boardWidth && position["Y"] >= m_Board_position["Y"])//Right vertical border
 	{
-		return;
+		return true;
 	}
 	else if (position["X"] > m_Board_position["X"] && position["Y"] >= m_Board_position["Y"] + m_boardHeight)//Lower  Horizontal border
 	{
-		return;
+		return true;
 	}
 
 #pragma endregion
+}
 
+void game_engine_core::GameController::FindPossibleTurnRecursive(
+	const vector<short>& position,
+	vector<short>& startPosition, const vector<short>& dirVector, bool multiKill)
+{
+	m_console_graphics_utility->SetCursorPosition(position.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
 
-#pragma endregion
-
-
-
-	if (auto cell = FindObjectUsingPosition(position, m_checkers, m_checkersCount) == nullptr)//Position of the empty cell (No checkers exists at this posVector)
+	//Base cases
+	if (position != startPosition)//initial Situation when we are at the same position
 	{
-		if (m_selectedChecker->IsCheckerWhite() && ((dirVector * m_boardBasis[1]) < 0))//Move of the white checker
-		{
-			m_possibleTurns.Add(FindCellUsingPosition(position));//Add Cells To be Highlighted
 
+		if (OutOfBorders(position))
+		{
 			return;
 		}
-		else if((dirVector * m_boardBasis[1]) > 0)//Move for the black checker
+
+		Checker* currentchecker = FindCheckerUsingPosition(position);
+
+		if (currentchecker == nullptr && !multiKill)//Position of the empty cell (No checkers exists at this posVector)
 		{
-			m_possibleTurns.Add(FindCellUsingPosition(position));//Add Cells To be Highlighted
+			if (m_selectedChecker->IsCheckerWhite() && ((dirVector * m_boardBasis[1]) < 0))//Move of the white checker
+			{
+				m_possibleTurns.AddToTheEnd(FindCellUsingPosition(position));//Add Cells To be Highlighted
 
+				return;
+			}
+			else if (!m_selectedChecker->IsCheckerWhite() && (dirVector * m_boardBasis[1]) > 0)//Move for the black checker
+			{
+				m_possibleTurns.AddToTheEnd(FindCellUsingPosition(position));//Add Cells To be Highlighted
+
+				return;
+			}
+			else
+			{
+				return;
+			}
+		}
+		else if (currentchecker != nullptr)
+		{
+			if (m_selectedChecker->IsCheckerWhite() != currentchecker->IsCheckerWhite()) //Cell contains checker, also case when checkers can fight
+			{
+				//Fighting We can attack only if the cell behind the checker is empty
+				//and the checker can't be attacked twice
+
+				if (m_checkersToBeKilled.Contains(FindCheckerUsingPosition(position)))
+				{
+					return;
+				}
+
+				vector<short> posBehind = position + dirVector;
+
+				m_console_graphics_utility->SetCursorPosition(posBehind.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
+
+				if (FindCheckerUsingPosition(posBehind) == nullptr)//Enemy checker is open
+				{
+					if (OutOfBorders(posBehind))
+					{
+						return;
+					}
+
+					m_multipleMoves++;
+
+					m_possibleTurns.AddToTheEnd(FindCellUsingPosition(posBehind));
+
+					m_checkersToBeKilled.AddToTheEnd(FindCheckerUsingPosition(position));
+					//Posibility of multiKill
+
+					bool multiKill = true;
+
+					FindPossibleTurnRecursive(posBehind + m_dirVectors[0], posBehind, m_dirVectors[0], multiKill);//Move leftUp
+					FindPossibleTurnRecursive(posBehind + m_dirVectors[1], posBehind, m_dirVectors[1], multiKill);//Move rightUp
+					FindPossibleTurnRecursive(posBehind + m_dirVectors[2], posBehind, m_dirVectors[2], multiKill);//Move leftDown
+					FindPossibleTurnRecursive(posBehind + m_dirVectors[3], posBehind, m_dirVectors[3], multiKill);//Move rightDown
+
+					return;
+				}
+				else
+				{
+					return;
+				}
+			}
+			else//Case when the cell contains checker of the same color
+			{
+				return;
+			}
+		}
+		else
+		{
 			return;
-		}		
-	}
-	else //Cell contains checker
-	{
+		}
 
 	}
 
-	HighlightPossibleTurnRecursive(position + m_dirVectors[0], m_dirVectors[0]);//Move leftUp
-	HighlightPossibleTurnRecursive(position + m_dirVectors[1], m_dirVectors[1]);//Move rightUp
-	HighlightPossibleTurnRecursive(position + m_dirVectors[2], m_dirVectors[2]);//Move leftDown
-	HighlightPossibleTurnRecursive(position + m_dirVectors[3], m_dirVectors[3]);//Move rightDown
-
-	size_t count = m_possibleTurns.GetCount();
-
-	for (size_t i = 0; i < count; i++)
-	{
-		m_possibleTurns[i]->HighlightBorder();
-	}
+	FindPossibleTurnRecursive(position + m_dirVectors[0], startPosition, m_dirVectors[0]);//Move leftUp
+	FindPossibleTurnRecursive(position + m_dirVectors[1], startPosition, m_dirVectors[1]);//Move rightUp
+	FindPossibleTurnRecursive(position + m_dirVectors[2], startPosition, m_dirVectors[2]);//Move leftDown
+	FindPossibleTurnRecursive(position + m_dirVectors[3], startPosition, m_dirVectors[3]);//Move rightDown	
 }
 
 void game_engine_core::GameController::HighLightPossibleTurns()
 {
-	size_t count = m_possibleTurns.GetCount();
+	m_possibleTurns.Iterate([](Cell* ptr) { ptr->HighlightBorder(); });
+
+	system("CLS");
+
+	Draw();
+}
+
+bool game_engine_core::GameController::IsGameOver(bool &winner)
+{
+	size_t count = m_checkersCount;
+
+	size_t mid = (m_checkersCount / 2) - 1;//11
+
+	size_t whiteAlivedCount = 0;
+
+	size_t BlackAlivedCount = 0;
 
 	for (size_t i = 0; i < count; i++)
 	{
-		m_possibleTurns[i]->UnHighLightBorder();
+		if (i >= 0 && i <= mid && (m_checkers + i)->isAlive())
+		{
+			BlackAlivedCount++;			
+		}
+		else if (i > mid && i < count && (m_checkers + i)->isAlive())
+		{
+			whiteAlivedCount++;
+		}			
 	}
 
+	if (whiteAlivedCount == 0 && BlackAlivedCount > 0)//White loses
+	{
+		winner = false;
+
+		return true;
+	}
+	else if (whiteAlivedCount > 0 && BlackAlivedCount == 0)//Black loses
+	{
+		winner = true;
+
+		return true;
+	}
+
+	return false;
+}
+
+void game_engine_core::GameController::DeselectAllGameObjects()
+{
+	//Deselect
+
+	m_selectedChecker->Deselct();
+
+	m_possibleTurns.Iterate([](Cell* cell) { cell->UnHighLightBorder(); });
+
+	CellBuildingOptions* cboptr = m_cellBuildingOptions;
+
+	m_selectedRouts.Iterate([cboptr](Cell* cell) { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() :
+		cboptr->GetBlackColor());
+
+	cell->Deselct();
+		});
+
+	/*system("CLS");
+
+	this->Draw();*/
+}
+
+void game_engine_core::GameController::Move()
+{
+	size_t selRoutsCount = m_selectedRouts.GetCount();
+
+	m_selectedChecker->SetPosition(m_selectedRouts[selRoutsCount - 1]->GetPosition());
+
+	//Determine Damka
+
+	if (m_selectedChecker->IsCheckerWhite() && m_selectedChecker->GetPosition()["Y"] <= m_Board_position["Y"])//White Checker
+	{
+		m_selectedChecker->MakeDamka();
+	}
+	else if(m_selectedChecker->GetPosition()["Y"] >= m_Board_position["Y"] + m_boardHeight - m_cellBuildingOptions->GetCellHeight())
+	{
+		m_selectedChecker->MakeDamka();
+	}
+
+	auto chToBeKilledPtr = &m_checkersToBeKilled;
+
+	const auto& boardPos = m_Board_position;
+
+	const auto& boardWidth = m_boardWidth;
+
+	//Fighting
+
+	//Ordinary fightting
+
+	if (!m_selectedChecker->IsDamka())
+	{
+		m_selectedRouts.Iterate([chToBeKilledPtr, boardPos, boardWidth](Cell* cell)
+			{
+				auto Sel_pos = cell->GetPosition();
+
+				chToBeKilledPtr->Iterate([Sel_pos, boardPos, boardWidth](Checker* ch)
+					{
+						vector<short> v = ch->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT) -
+							Sel_pos.Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
+
+						size_t dirVectorsCount = std::size(m_dirVectors);
+
+						for (size_t i = 0; i < dirVectorsCount; i++)
+						{
+							if (v == m_dirVectors[i])
+							{
+								ch->Kill();
+
+								ch->SetPosition(vector<ushort>(boardPos[0] + boardWidth, 2));
+							}
+						}
+					}
+
+				);
+			});
+	}
+	else
+	{
+
+	}
+	
+}
+
+void game_engine_core::GameController::SelectMove(std::function<void()> PrintFunc,
+	std::function<void()> PrintConfirmFunc)
+{
+	if (m_possibleTurns.GetCount() == 0)
+		return;
+
+	char* cptr = m_controls;
+
+	char input;
+
+	size_t start = 0;
+
+	size_t end = m_possibleTurns.GetCount();
+
+	Cell* ptr = nullptr;
+
+	WORD prevColor;
+
+	auto cboptr = m_cellBuildingOptions;
+
+	bool select_= false;
+	
+	do
+	{
+		do
+		{
+			ptr = m_possibleTurns[start];
+
+			ptr->Select();
+
+			system("CLS");
+
+			Draw();
+
+			if (PrintFunc != nullptr)
+				PrintFunc();
+
+			input = console_funcs::Input<char, char>([cptr](char& inp)->bool
+				{
+					if (inp == cptr[0] || inp == std::toupper(cptr[0]))//move left
+					{
+						return true;
+					}
+					else if (inp == cptr[1] || inp == std::toupper(cptr[1]))//move right
+					{
+						return true;
+					}
+					else if (inp == cptr[2] || inp == std::toupper(cptr[2]))//selection
+					{
+						return true;
+					}
+					else if (inp == cptr[3] || inp == std::toupper(cptr[3]))//confirm
+					{
+						return true;
+					}
+					else if (inp == cptr[4] || inp == std::toupper(cptr[4]))//abort
+					{
+						return true;
+					}
+
+					return false;
+				}, false);
+
+			if (input == *m_controls)//Move left
+			{
+				start -= 1;
+			}
+			else if (input == *(m_controls + 1))//Move Right
+			{
+				start += 1;
+			}
+
+			if (ptr != nullptr)
+				if (ptr->isSelected())
+					ptr->Deselct();
+
+			if (start > end - 1)
+			{
+				start = 0;
+			}
+			else if (start < 0)
+			{
+				start = end - 1;
+			}
+
+			if (input == cptr[2] || input == std::toupper(cptr[2]))//Select cell
+			{
+				if (!select_)
+				{
+					ptr->SetBackColor(ptr->GetSelectionColor());
+
+					m_selectedRouts.AddToTheEnd(ptr);
+
+					select_ = true;
+				}
+				else
+				{
+					ptr->SetBackColor(ptr->IsWhite() ? cboptr->GetWhiteColor() : cboptr->GetBlackColor());
+
+					m_selectedRouts.RemoveNode(ptr);
+
+					select_ = false;
+				}
+				
+			}
+
+			if ((m_multipleMoves <= 0) && select_)//true -> break
+			{
+				break;
+			}
+
+		} while (!(input == m_controls[3] || input == std::toupper(m_controls[3])));// confirmation of selection
+
+		if (PrintConfirmFunc != nullptr)
+			PrintConfirmFunc();
+
+		input = console_funcs::Input<char, char>([cptr](char& inp)->bool
+			{
+				if (inp == cptr[3] || inp == std::toupper(cptr[3]))// confirm
+				{
+					return true;
+				}
+				else if (inp == cptr[4] || inp == std::toupper(cptr[4])) // reselection
+				{
+					return true;
+				}
+				return false;
+			}, false);
+
+		if (input == m_controls[4] || input == std::toupper(m_controls[4]))
+		{
+			select_ = false;
+
+			m_possibleTurns.Iterate([cboptr](Cell* cell) { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() : cboptr->GetBlackColor()); });
+
+			m_selectedRouts.Clear();
+		}
+
+	} while (!(input == cptr[3] || input == std::toupper(cptr[3])));
+	
+}
+
+bool game_engine_core::GameController::IsAllPossibleTurnsSelected()
+{
+	bool result = true;
+
+	m_possibleTurns.Iterate([&result](Cell* cell)
+		{
+			result = cell->isSelected();
+		});
+
+	return result;
+}
+
+void game_engine_core::GameController::FindPossibleTurns()
+{
+	m_multipleMoves = -1;
+
 	m_possibleTurns.Clear();
+
+	m_checkersToBeKilled.Clear();
+
+	m_selectedRouts.Clear();
 
 	vector<ushort> pos = m_selectedChecker->GetPosition();
 
 	vector<short> selectedCheckerPos = vector<short>(pos[0], pos[1]);
 
-	HighlightPossibleTurnRecursive(selectedCheckerPos);
+	vector<short> checkerTempPosition = selectedCheckerPos;
+
+	FindPossibleTurnRecursive(selectedCheckerPos, checkerTempPosition);
 }
 
 void game_engine_core::GameController::Draw()
@@ -921,74 +1275,147 @@ game_engine_core::GameController* game_engine_core::GameController::Initialize(c
 	}
 }
 
-void game_engine_core::GameController::SelectChecker(bool whiteblack, std::function<void()> PrintFunc)
+void game_engine_core::GameController::SelectChecker(bool whiteblack, std::function<void()> PrintFunc,
+	std::function<void()> PrintConfirmFunc)
 
 {
 	if (m_selectedChecker != nullptr)
 		if (m_selectedChecker->isSelected())
 			m_selectedChecker->Deselct();
 
+	char* cptr = m_controls;
+
 	char input;
 
-	size_t index = 0;
+	int index = 0;
 
-	size_t start;
+	int start;
 
-	size_t end;
+	int end;
 
-	size_t mid = m_checkersCount / 2; //11	
+	int mid = (m_checkersCount / 2) - 1; //11	
 
 	if (!whiteblack)//Black
 	{
 		start = 0;
 
-		index = start;
-
 		end = mid;
 	}
 	else//White
 	{
-		index = mid;
-
-		start = mid;
+		start = mid + 1;
 
 		end = m_checkersCount - 1;
 	}
 
+	index = start;
+
 	do
 	{
-		m_selectedChecker = m_checkers + index;
+		do
+		{
+			m_selectedChecker = m_checkers + index;
 
-		m_selectedChecker->Select();
+			m_selectedChecker->Select();
+
+			system("CLS");
+
+			this->Draw();
+
+			if (PrintFunc != nullptr)
+				PrintFunc();
+
+			input = console_funcs::Input<char, char>([cptr](char& inp)->bool
+				{
+					if (inp == cptr[0] || inp == std::toupper(cptr[0]))
+					{
+						return true;
+					}
+					else if (inp == cptr[1] || inp == std::toupper(cptr[1]))
+					{
+						return true;
+					}
+					else if (inp == cptr[2] || inp == std::toupper(cptr[2]))
+					{
+						return true;
+					}
+
+					return false;
+				}, false);
+
+			if (input == *m_controls)//Move left
+			{
+				index -= 1;
+			}
+			else if (input == *(m_controls + 1))
+			{
+				index += 1;
+			}
+
+			if (m_selectedChecker != nullptr)
+				if (m_selectedChecker->isSelected())
+					m_selectedChecker->Deselct();
+
+			if (index < start)
+				index = end;
+			else if (index > end)
+				index = start;
+
+			auto temp = m_checkers + index;
+
+			while (!temp->isAlive())//Manual shifting
+			{
+				if (input == *m_controls)//Move left
+				{
+					index -= 1;
+				}
+				else if (input == *(m_controls + 1))
+				{
+					index += 1;
+				}
+
+				if (index < start)
+					index = end;
+				else if (index > end)
+					index = start;
+
+				temp = m_checkers + index;
+			}
+
+
+
+		} while (!(input == *(m_controls + 2) || input == std::toupper(*(m_controls + 2))));
+
+		if (m_selectedChecker != nullptr)
+			if (!m_selectedChecker->isSelected())
+				m_selectedChecker->Select();
 
 		system("CLS");
 
 		this->Draw();
 
-		if (PrintFunc != nullptr)
-			PrintFunc();
+		if (PrintConfirmFunc != nullptr)
+			PrintConfirmFunc();
 
-		input = _getch();
+		input = console_funcs::Input<char, char>([cptr](char& inp)->bool
+			{
+				if (inp == cptr[3] || inp == std::toupper(cptr[3]))
+				{
+					return true;
+				}
+				else if (inp == cptr[4] || inp == std::toupper(cptr[4]))
+				{
+					return true;
+				}
+				return false;
+			}, false);
 
-		if (input == *m_controls)//Move left
+		if (input == cptr[4] || input == std::toupper(cptr[4]))
 		{
-			index -= 1;
-		}
-		else if (input == *(m_controls + 1))
-		{
-			index += 1;
+			continue;
 		}
 
-		if (m_selectedChecker != nullptr)
-			if (m_selectedChecker->isSelected())
-				m_selectedChecker->Deselct();
-
-		if (index < start)
-			index = end;
-		else if (index > end)
-			index = start;
-
-	} while (input != '\r');
+	} while (!(input == *(m_controls + 3) || input == std::toupper(*(m_controls + 3))));	
 }
 
 
@@ -996,7 +1423,10 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 
 #pragma region Static definitions
 
+signed char game_engine_core::GameController::m_multipleMoves = -1;
+
 bool game_engine_core::GameController::m_init = false;
+
 
 vector_math::vector<short> game_engine_core::GameController::m_dirVectors[4] =
 {
@@ -1035,7 +1465,7 @@ game_engine_core::CellBuildingOptions::CellBuildingOptions(ushort width, ushort 
 	CellBuildingOptions(console_graphics::Colors::BLACKBack,
 		console_graphics::Colors::WhiteBack, console_graphics::Colors::BLACK |
 		console_graphics::Colors::LIGHTGRAYBack, console_graphics::Colors::GREENBack,
-		console_graphics::Colors::GREENBack,
+		console_graphics::Colors::ORANGEBack,
 		width, height) {}
 
 #pragma endregion

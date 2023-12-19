@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Checkers.cpp" />
     <ClCompile Include="Console_graphics.cpp" />
+    <ClCompile Include="convertion.cpp" />
     <ClCompile Include="GameEngine.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -145,9 +146,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Console_graphics.h" />
+    <ClInclude Include="convertion.h" />
+    <ClInclude Include="DataStructures.h" />
     <ClInclude Include="GameEngine.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="smart_array.h" />
     <ClInclude Include="v_math.h" />
     <ClInclude Include="v_mathBase.h" />
   </ItemGroup>

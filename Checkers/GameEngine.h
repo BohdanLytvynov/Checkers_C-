@@ -6,7 +6,7 @@ typedef unsigned short ushort;
 
 #include"v_math.h"
 #include"Console_graphics.h"
-#include"smart_array.h"
+#include"DataStructures.h"
 
 namespace game_engine_core
 {	
@@ -196,6 +196,8 @@ namespace game_engine_core
 
 		bool IsCheckerWhite() const;
 
+		bool IsDamka() const;
+
 	private:
 		ushort m_HorbaseLength;
 
@@ -283,11 +285,24 @@ namespace game_engine_core
 	{
 	public:		
 				
-		void SelectChecker(bool whiteBlack, std::function<void()> PrintFunc = nullptr);
+		void SelectChecker(bool whiteBlack, std::function<void()> PrintFunc = nullptr, 
+			std::function<void()> PrintConfirmFunc = nullptr);
 				
+		void FindPossibleTurns();
+
 		void HighLightPossibleTurns();
 
+		void SelectMove(std::function<void()> PrintFunc = nullptr,
+			std::function<void()> PrintConfirmFunc = nullptr
+			);
+
+		void Move();
+
 		void Draw();
+
+		void DeselectAllGameObjects();
+
+		bool IsGameOver(bool &winner);
 
 		static GameController* Initialize(console_graphics_utility* console_graphics_utility, 
 			vector<ushort> controllerPosition, CellBuildingOptions* cellbuildingOptions,
@@ -299,11 +314,15 @@ namespace game_engine_core
 
 	private:
 		
+		bool OutOfBorders(const vector<short> &position);
+
+		bool IsAllPossibleTurnsSelected();		
+
 		Cell* FindCellUsingPosition(const vector<short>& positionVector);
 
-		GameObject* FindObjectUsingPosition(const vector<short>& positionVector, GameObject* ptr, size_t size);//??
+		Checker* FindCheckerUsingPosition(const vector<short>& positionVector);//??
 
-		void HighlightPossibleTurnRecursive(const vector<short> &position, const vector<short>& dirVector);
+		void FindPossibleTurnRecursive(const vector<short> &position, vector<short>& prevPosition, const vector<short>& dirVector = vector<short>(), bool multiKill = false);
 
 		void DrawBoard();
 
@@ -319,9 +338,11 @@ namespace game_engine_core
 
 		ushort m_boardHeight;
 
-		smart_array<Checker*> m_checkersToBeKilled;
+		linear_data_structures::single_linked_list<Checker*> m_checkersToBeKilled;
 
-		smart_array<Cell*> m_possibleTurns;
+		linear_data_structures::single_linked_list<Cell*> m_possibleTurns;
+
+		linear_data_structures::single_linked_list<Cell*> m_selectedRouts;
 
 		console_graphics_utility* m_console_graphics_utility;
 
@@ -337,6 +358,8 @@ namespace game_engine_core
 		const size_t m_checkersCount = 24;
 
 		static bool m_init;
+
+		static signed char m_multipleMoves;		
 
 		static vector<short> m_dirVectors [4];
 

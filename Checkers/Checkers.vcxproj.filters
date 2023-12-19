@@ -27,6 +27,9 @@
     <ClCompile Include="GameEngine.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="convertion.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="v_mathBase.h">
@@ -44,7 +47,10 @@
     <ClInclude Include="GameEngine.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="smart_array.h">
+    <ClInclude Include="convertion.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructures.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

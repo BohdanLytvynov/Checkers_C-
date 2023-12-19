@@ -6,10 +6,10 @@
 
 #include<cmath>
 
+#include"convertion.h"
+
 namespace vector_math
 {
-
-
 	Tdecl
 	class vector;
 
@@ -51,7 +51,7 @@ namespace vector_math
 #pragma endregion
 
 #pragma region Vector Declaretion
-
+	
 	Tdecl
 		class vector : public ConsoleCoords<T>
 	{
@@ -94,9 +94,19 @@ namespace vector_math
 
 #pragma region Operators
 
+#pragma region Logical Functions
+
+		bool Equals(const vector<T> other) const
+		{
+			return this->operator==(other);
+		}
+
+#pragma endregion
+
+
 #pragma region Logical Operators
 
-		bool operator == (const vector<T>& other)
+		bool operator == (const vector<T>& other) const
 		{
 			if (this->GetLength() == other.GetLength())
 				return this->GetX() == other.GetX() && this->GetY() == other.GetY();
@@ -104,12 +114,13 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator != (const vector<T>& other)
+		bool operator != (const vector<T>& other) const
 		{
 			return !((*this) == other);
 		}
 
-		bool operator < (const vector<T> other)
+		
+		bool operator < (const vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() < other.GetLength();
@@ -117,7 +128,7 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator > (const vector<T> other)
+		bool operator > (const vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() > other.GetLength();
@@ -125,7 +136,7 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator >= (const vector<T> other)
+		bool operator >= (const vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() >= other.GetLength();
@@ -133,7 +144,7 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator <= (const vector<T> other)
+		bool operator <= (const vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() <= other.GetLength();
@@ -296,12 +307,28 @@ namespace vector_math
 
 #pragma endregion
 
+#pragma region Converter
+		template<class Tout>
+		vector<Tout> Convert_To(value_convertion::IConverter<T, Tout> &converter) const
+		{
+			value_convertion::IConverter<T, Tout>* ptr = &converter;
+
+			return vector<Tout>(ptr->ConvertTo(ConsoleCoords<T>::GetX()), 
+				ptr->ConvertTo(ConsoleCoords<T>::GetY()));
+		}
+		
+
+#pragma endregion
+
 
 #pragma endregion
 
 	};
 
 #pragma endregion
+
+
+
 
 }
 

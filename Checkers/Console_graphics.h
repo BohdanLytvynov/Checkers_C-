@@ -3,8 +3,10 @@
 #define CONSOLE_GRAPHICS_H
 
 #include"v_math.h"
-
+#include<functional>
 typedef unsigned short ushort;
+
+
 
 namespace console_graphics
 {
@@ -84,7 +86,7 @@ namespace console_graphics
 	};
 
 	struct console_graphics_utility
-	{
+	{		
 		void SetCursorPosition(const vector<ushort> &vector);
 
 		vector<ushort> GetCursorPosition() const;
@@ -122,6 +124,41 @@ namespace console_graphics
 
 		WORD m_defColor;
 	};	
+}
+
+namespace console_funcs
+{
+	template<class Tout, class TWrite>
+	Tout Input(std::function<bool(TWrite&)> checker,
+		bool enterRequire, std::function<Tout(TWrite&)> converter = nullptr,
+		const std::string& msg = "")
+	{
+		TWrite input;
+
+		do
+		{
+			if (!msg.empty())
+				std::cout << msg << std::endl;
+			if (enterRequire)
+			{
+				std::cin >> input;
+			}
+			else
+			{
+				input = _getch();
+			}			
+
+		} while (!checker(input));
+
+		if (converter!= nullptr)
+		{
+			return converter(input);
+		}
+
+		return input;
+	}
+
+	
 }
 
 #endif // CONSOLE_GRAPHICS_H
