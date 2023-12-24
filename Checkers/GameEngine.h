@@ -18,7 +18,7 @@ namespace game_engine_core
 		GameObject();
 
 		GameObject(const ushort& width, const ushort& height, const WORD& backGround,	
-			const WORD& selColor, 
+			const WORD& focusColor, 
 			vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		virtual ~GameObject();
@@ -43,9 +43,9 @@ namespace game_engine_core
 
 		size_t GetCharsToDrawSize() const;
 		
-		virtual bool isSelected() const;
+		virtual bool isFocused() const;
 
-		WORD GetSelectionColor() const;
+		WORD GetFocusColor() const;
 			
 #pragma endregion
 
@@ -63,31 +63,31 @@ namespace game_engine_core
 		
 		void SetCharsToDrawSize(size_t size);
 
-		virtual void Select();
+		virtual void Focus();
 
-		virtual void Deselct();
+		virtual void UnFocus();
 
-		void SetSelectionColor(WORD selColor);
+		void SetFocusColor(WORD selColor);
 
 #pragma endregion
 
 	private:
 
-		char* m_chars;
+		char* m_chars;//Контролює з яких символіів буде відмальована шашка (Покажчик)
 
-		size_t m_charsToDrawSize;
+		size_t m_charsToDrawSize;//Контролює розмір динам массиву чар
 
-		WORD m_backGround;
+		WORD m_backGround;//Колір бєкграунд
 
-		WORD m_selectionColor;
+		WORD m_focusColor;//Колір фокусування обєкта
 		
-		vector<ushort> m_position;
+		vector<ushort> m_position;//Радіус вектор обєкта
 
-		ushort m_width;
+		ushort m_width;//Ширина
 
-		ushort m_height;
+		ushort m_height;//Висота
 
-		bool m_selected;			
+		bool m_focused;//Сфокусовано чи ні		
 	};
 	
 	struct Killable : public GameObject
@@ -122,21 +122,22 @@ namespace game_engine_core
 
 	struct IBorderHighLightable
 	{
-		virtual const WORD& GetBorderSelectionColor() const = 0;
+		virtual const WORD& GetBorderHighlightColor() const = 0;
 
-		virtual void SetBorderSelectionColor(const WORD& borderSelColor) = 0;
+		virtual void SetBorderHighlightColor(const WORD& borderSelColor) = 0;
 
 		virtual void HighlightBorder() = 0;
 
 		virtual void UnHighLightBorder() = 0;
 	};
-
-	struct Cell : public GameObject, public IObjectWithBorder, public IBorderHighLightable
+	
+	struct Cell : public GameObject, public IObjectWithBorder, 
+		public IBorderHighLightable
 	{
 		Cell();
 
 		Cell(const ushort& width, const ushort& height, const WORD& backGround,
-			const WORD& border, const WORD& selColor, const WORD& bordeHighlightColor,
+			const WORD& border, const WORD& focusColor, const WORD& bordeHighlightColor,			
 			vector<ushort> position, bool isWhite, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		void Render(console_graphics_utility& utility) override;
@@ -146,6 +147,12 @@ namespace game_engine_core
 		Cell& operator = (const Cell& other);
 
 		bool IsWhite() const;
+
+		bool IsMoveSelected() const;
+
+		void SelectMove();
+
+		void DeSelectMove();
 
 #pragma region IObject with border Interface
 
@@ -157,16 +164,15 @@ namespace game_engine_core
 
 #pragma region IBorder Highlightable Interface
 
-		const WORD& GetBorderSelectionColor() const override;
+		const WORD& GetBorderHighlightColor() const override;
 
-		void SetBorderSelectionColor(const WORD& borderSelColor) override;
+		void SetBorderHighlightColor(const WORD& borderSelColor) override;
 
 		void HighlightBorder() override;
 
 		void UnHighLightBorder() override;
 
 #pragma endregion
-
 
 	private:
 		bool m_isWhite;
@@ -176,6 +182,8 @@ namespace game_engine_core
 		WORD m_BorderHighlightColor;
 
 		bool m_borderHighLight;
+
+		bool m_Move_Selected;
 	};
 	
 	struct Checker : public Killable
@@ -214,7 +222,7 @@ namespace game_engine_core
 
 		CellBuildingOptions(WORD BlackColor,
 			WORD WhiteColor, WORD borderColor, 
-			WORD borderHighLightColor, WORD SelColor,
+			WORD borderHighLightColor, WORD FocusColor, WORD sel_BorderColor,
 			ushort cellWidth = 10, ushort cellHeight = 6);
 
 		const ushort& GetCellWidth() const;
@@ -229,9 +237,11 @@ namespace game_engine_core
 
 		void SetBorderColor(const WORD& borderColor) override;
 
-		const WORD& GetSelectionColor() const;
+		const WORD& GetFocusColor() const;
 
 		const WORD& GetBorderHighlightColor() const;
+
+		const WORD& GetMoveSelectColor() const;
 
 	private:
 
@@ -245,9 +255,11 @@ namespace game_engine_core
 
 		WORD m_borderColor;
 
-		WORD m_SelectionColor;
+		WORD m_FocusColor;
 
 		WORD m_BorderHighlightColor;
+
+		WORD m_MoveSelectColor;
 	};
 
 	struct CheckerBuildingOptions
@@ -313,7 +325,13 @@ namespace game_engine_core
 		GameController& operator = (const GameController&) = delete;
 
 	private:
-		
+								
+		vector<short> FindOrthogonalVector(const vector<short>& v) const;
+
+		void FindAllPosibleTurnsForKingRecursive(const vector<short>& position, 
+			vector<short>& prevPosition, bool &onCallback, const vector<short>& dirVector = vector<short>(), 
+			bool checker_under_attack = false);
+
 		bool OutOfBorders(const vector<short> &position);
 
 		bool IsAllPossibleTurnsSelected();		
@@ -344,6 +362,8 @@ namespace game_engine_core
 
 		linear_data_structures::single_linked_list<Cell*> m_selectedRouts;
 
+		//linear_data_structures::single_linked_list<Cell*> m_TempPossibleTurns;
+
 		console_graphics_utility* m_console_graphics_utility;
 
 		char* m_controls;
@@ -359,7 +379,7 @@ namespace game_engine_core
 
 		static bool m_init;
 
-		static signed char m_multipleMoves;		
+		static signed char m_multipleTakes;		
 
 		static vector<short> m_dirVectors [4];
 
@@ -373,8 +393,6 @@ namespace game_engine_core
 
 	};	
 }
-
-
 
 #endif // !GAMEENGINE_H
 

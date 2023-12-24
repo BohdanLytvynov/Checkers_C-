@@ -50,13 +50,16 @@ namespace linear_data_structures
             m_count++;
         }
 
-        void Iterate(std::function<void(T)> func)
+        void Iterate(std::function<bool(T)> func)
         {
             Node<T>* temp = m_head;
 
             while (temp != nullptr)
             {
-                func(temp->GetData());
+                if (!func(temp->GetData()))
+                {
+                    break;
+                }
 
                 temp = temp->GetNextPtr();                
             }

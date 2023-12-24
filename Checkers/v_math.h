@@ -96,15 +96,36 @@ namespace vector_math
 
 #pragma region Logical Functions
 
-		bool Equals(const vector<T> other) const
+		bool Equals(const vector<T> &other) const
 		{
 			return this->operator==(other);
 		}
 
+		bool IsColinear(const vector<T>& other) const
+		{
+			return (this->GetX() * other.GetY() - other.GetX() * this->GetY()) == 0;
+		}
+
+		bool IsCoDirectional(const vector<T>& other)
+		{
+			if (IsColinear(other))
+			{
+				//Determine wether vectors are codirectional
+
+				return this->DotProduct(other) > 0;
+			}
+
+			return false;
+		}
+
 #pragma endregion
 
-
 #pragma region Logical Operators
+
+		bool operator || (const vector<T> &other) const
+		{
+			return IsColinear(other);
+		}
 
 		bool operator == (const vector<T>& other) const
 		{
@@ -173,6 +194,11 @@ namespace vector_math
 			return vector_math::vector<T>(this->GetX() - vector.GetX(), this->GetY() - vector.GetY());
 		}
 
+		vector<T> operator -()
+		{
+			return Invert();
+		}
+
 		vector<T>& operator -= (const vector<T> vector)
 		{
 			this->SetXY(this->GetX() - vector.GetX(), this->GetY() - vector.GetY());
@@ -218,6 +244,11 @@ namespace vector_math
 
 #pragma region Math functions
 
+		vector<T> Invert() 
+		{
+			return this->operator* -1;
+		}
+
 		double GetLength() const
 		{
 			return static_cast<double>(sqrtf(this->GetX() * this->GetX() + this->GetY() * this->GetY()));
@@ -232,7 +263,7 @@ namespace vector_math
 		{
 			T length = this->GetLength() > 1 ? this->GetLength() : 1;
 
-			return (*this) * length;
+			return this->operator * (1/length);
 		}
 
 		vector<T> MultiplyXYSeparetly(T multiplyers[2])

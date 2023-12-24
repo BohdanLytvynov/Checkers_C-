@@ -6,8 +6,6 @@
 #include<functional>
 typedef unsigned short ushort;
 
-
-
 namespace console_graphics
 {
 	using namespace vector_math;
@@ -129,7 +127,7 @@ namespace console_graphics
 namespace console_funcs
 {
 	template<class Tout, class TWrite>
-	Tout Input(std::function<bool(TWrite&)> checker,
+	Tout Input(std::function<bool(TWrite&)> inputValidator,
 		bool enterRequire, std::function<Tout(TWrite&)> converter = nullptr,
 		const std::string& msg = "")
 	{
@@ -148,7 +146,7 @@ namespace console_funcs
 				input = _getch();
 			}			
 
-		} while (!checker(input));
+		} while (!inputValidator(input));
 
 		if (converter!= nullptr)
 		{

@@ -2,7 +2,7 @@
 #include"v_math.h"
 #include"GameEngine.h"
 #include"Console_graphics.h"
-
+#include<cstdlib>
 #pragma region Functions
 
 
@@ -29,7 +29,7 @@ int main()
 #pragma endregion
 
 #pragma region Main game Variables
-
+	
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	console_graphics_utility* cgu = console_graphics_utility::Init(console);
@@ -60,121 +60,227 @@ int main()
 		&cellOpt, &checkOpt);
 	
 	char input;
+
+	string comp_names[4] = {"<<Mr_Processor>>", "<<MeatBall_Anihilator>>", "SUPER_CPU", "I'll_divide_you_ByZERO"};
 	
+	string pl1;
+
+	string pl2;
+    
+	bool start = false;
+
 #pragma endregion
 
-#pragma region Game
+
 	
+#pragma region Game
+		
 	do
 	{
-		gc->SelectChecker(whiteBlack, [cgu, textPos, whiteBlack]()
+		cgu->PrintAtCenter("<<<Checkers the Game>>>");
+
+		//Selection menu
+		input = console_funcs::Input<char, char>([cgu](char inp)->bool
 			{
-				cgu->PrintAtCenter("<<<Checkers the Game>>>");
+				if (inp == '1' || inp == '2' || inp == '3')
+				{
+					return true;
+				}
+				else
+				{
+					cgu->Print("Incorrect Input!");
 
-				cgu->Print("Turn of:" + whiteBlack ? "white Checkers(Player 1)" : "black Checkers(Player 2)",
-					textPos);
+					return false;
+				}
 
-				cgu->Print("Pressing A D please chose the object you want to use for the turn.",
-					textPos + vector_math::vector<ushort>(0, 1));
+				return true;
 
-				cgu->Print("After you chose the propriate object press s.",
-					textPos + vector_math::vector<ushort>(0, 2));
-			} , [cgu, textPos, whiteBlack]()
+			}, false, nullptr, "Choose an option:\n\t Press 1 -> 2 Players \n\t Press 2 -> 1 Player\n\t Press 3 -> if you want to exit");
+
+#pragma region Main game cycle
+		
+		std::system("CLS");
+
+		if (input == '1')
+		{
+			cgu->Print("You have selected option 2 Players!");
+
+			pl1 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
+				"Enter name of the first Player(white Checkers): ");
+
+			pl2 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
+				"Enter name of the second Player(black Checkers): ");
+		}
+		else if (input == '2')
+		{
+			cgu->Print("You have selected option 1 Player!");
+
+			pl1 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
+				"Enter name of the first Player(white Checkers): ");
+
+			pl2 = comp_names[std::rand() % size(comp_names)];
+		}
+		else if (input == '3')
+		{
+			return 0;
+		}
+
+		cgu->Print("1 - Player: " + pl1);
+
+		cgu->Print("2 - Player: " + pl2);
+
+		input = console_funcs::Input<char, char>([](char inp)->bool {return true; }, true, nullptr,
+			"Are you ready to start game? press y or n: ");
+
+		if (input == 'n' || input == 'N')
+		{
+			start = true;
+		}
+
+		string name1 = "white_Checkers: " + pl1;
+
+		string name2 = "white_Checkers: " + pl2;
+
+		if (start)
+		{
+			do
 			{
-				cgu->PrintAtCenter("<<<Checkers the Game>>>");
+				gc->SelectChecker(whiteBlack, [name1, name2, cgu, textPos, whiteBlack]()
+					{
+						cgu->PrintAtCenter("<<<Checkers the Game>>>");
 
-				cgu->Print("                                   ",
-					textPos);
+						string whiteBlackStr = whiteBlack ? name1 : name2;
 
-				cgu->Print("                                   ",
-					textPos + vector_math::vector<ushort>(0, 1));
+						cgu->Print("Turn of:" + whiteBlackStr,
+							textPos);
 
-				cgu->Print("                                   ",
-					textPos + vector_math::vector<ushort>(0, 2));
+						cgu->Print("By pressing A D please chose the checker you want to use for the turn.",
+							textPos + vector_math::vector<ushort>(0, 1));
 
-				cgu->Print("Selection done succesfuly!",
-					textPos);
+						cgu->Print("After you chose the propriate object press s.",
+							textPos + vector_math::vector<ushort>(0, 2));
+					}, [cgu, textPos, whiteBlack]()
+					{
+						cgu->PrintAtCenter("<<<Checkers the Game>>>");
 
-				cgu->Print("Press c to confirm your selection. ",
-					textPos + vector_math::vector<ushort>(0, 1));
+						cgu->Print("                                   ",
+							textPos);
 
-				cgu->Print("If you want to cancel move set press r!",
-					textPos + vector_math::vector<ushort>(0, 2));
-			});
+						cgu->Print("                                   ",
+							textPos + vector_math::vector<ushort>(0, 1));
 
-		gc->FindPossibleTurns();
+						cgu->Print("                                   ",
+							textPos + vector_math::vector<ushort>(0, 2));
 
-		gc->HighLightPossibleTurns();
+						cgu->Print("Selection done succesfuly!",
+							textPos);
 
-		gc->SelectMove([cgu, textPos, whiteBlack]()
-		{
-			cgu->PrintAtCenter("<<<Checkers the Game>>>");
+						cgu->Print("Press c to confirm your selection. ",
+							textPos + vector_math::vector<ushort>(0, 1));
 
-			cgu->Print("Turn of:" + whiteBlack ? "white Checkers(Player 1)" : "black Checkers(Player 2)",
-				textPos);
+						cgu->Print("If you want to cancel move set press r!        ",
+							textPos + vector_math::vector<ushort>(0, 2));
+					});
 
-			cgu->Print("Pressing A D please chose the object you want to use for the turn.",
-				textPos + vector_math::vector<ushort>(0, 1));
+				gc->FindPossibleTurns();
 
-			cgu->Print("After you chose the propriate object press s.",
-				textPos + vector_math::vector<ushort>(0, 2));
-		}, [cgu, textPos, whiteBlack]()
-		{
-			cgu->PrintAtCenter("<<<Checkers the Game>>>");
+				gc->HighLightPossibleTurns();
 
-			cgu->Print("                                   ",
-				textPos);
+				gc->SelectMove([name1, name2, cgu, textPos, whiteBlack]()
+					{
+						cgu->PrintAtCenter("<<<Checkers the Game>>>");
 
-			cgu->Print("                                   ",
-				textPos + vector_math::vector<ushort>(0, 1));
+						string whiteBlackStr = whiteBlack ? name1 : name2;
 
-			cgu->Print("                                   ",
-				textPos + vector_math::vector<ushort>(0, 2));
+						cgu->Print("Turn of:" + whiteBlackStr,
+							textPos);
 
-			cgu->Print("Selection done succesfuly!",
-				textPos);
+						cgu->Print("By pressing A D please chose the cell you want to use for the turn.",
+							textPos + vector_math::vector<ushort>(0, 1));
 
-			cgu->Print("Press c to confirm your selection. ",
-				textPos + vector_math::vector<ushort>(0, 1));
+						cgu->Print("After you chose the propriate object press s.",
+							textPos + vector_math::vector<ushort>(0, 2));
 
-			cgu->Print("If you want to cancel move set press r!",
-				textPos + vector_math::vector<ushort>(0, 2));
-		});
+						cgu->Print("In case of multiselection: By using A D choose the turn",
+							textPos + vector_math::vector<ushort>(0, 3));
 
-		gc->Move();
+						cgu->Print("then press s to select this move. After you have choosen all",
+							textPos + vector_math::vector<ushort>(0, 4));
 
-		gc->DeselectAllGameObjects();
+						cgu->Print("the turns you want press c to confirm this moveset, if you want",
+							textPos + vector_math::vector<ushort>(0, 5));
 
-		whiteBlack = !whiteBlack;
-	} while (!gc->IsGameOver(whiteBlack_Winner));
+						cgu->Print("to change it, press r, it will clear the selected moveset",
+							textPos + vector_math::vector<ushort>(0, 6));
+					}, [cgu, textPos, whiteBlack]()
+					{
+						cgu->PrintAtCenter("<<<Checkers the Game>>>");
+
+						cgu->Print("                                                                   ",
+							textPos);
+
+						cgu->Print("                                                                   ",
+							textPos + vector_math::vector<ushort>(0, 1));
+
+						cgu->Print("                                                                   ",
+							textPos + vector_math::vector<ushort>(0, 2));
+
+						cgu->Print("                                                                   ",
+							textPos + vector_math::vector<ushort>(0, 3));
+
+						cgu->Print("                                                                   ",
+							textPos + vector_math::vector<ushort>(0, 4));
+
+						cgu->Print("                                                                   ",
+							textPos + vector_math::vector<ushort>(0, 5));
+
+						cgu->Print("                                                                   ",
+							textPos + vector_math::vector<ushort>(0, 6));
+
+						cgu->Print("Selection done succesfuly!",
+							textPos);
+
+						cgu->Print("Press c to confirm your selection.                                   ",
+							textPos + vector_math::vector<ushort>(0, 1));
+
+						cgu->Print("If you want to cancel move set press r!                              ",
+							textPos + vector_math::vector<ushort>(0, 2));
+					});
+
+				gc->Move();
+
+				gc->DeselectAllGameObjects();
+
+				whiteBlack = !whiteBlack;
+			} while (!gc->IsGameOver(whiteBlack_Winner));
+
+			std::system("CLS");
+
+			if (whiteBlack_Winner)
+			{
+				std::cout << name1 + " wins!" << endl;
+			}
+			else
+			{
+				std::cout << name2 + " wins!" << endl;
+			}
+
+#pragma endregion
+		}
+				
+		std::system("CLS");
+
+		input = console_funcs::Input<char, char>([](char inp)->bool 
+			{
+				return true;
+			}, false, nullptr, "Do you want to cancel the game? Press q if not, press any key!");
+
+	} while (!(input == 'q' || input == 'Q'));
 	
-	if (whiteBlack_Winner)
-	{
-		std::cout << "White checkers wins!" << endl;
-	}
-	else
-	{
-		std::cout << "Black checkers wins!" << endl;
-	}
-
 #pragma endregion   
 
-	//Select Checker Cycle
-
-
-
-	/*Cell c = Cell(10, 6, console_graphics::Colors::WhiteBack, console_graphics::Colors::BLACK |
-	console_graphics::Colors::LIGHTGRAYBack, vector<ushort>(3,3), true);
-
-	Checker ch = Checker(10, 6, console_graphics::Colors::GREYBack, console_graphics::Colors::BLACK,
-		vector<ushort>(3, 3));
-
-	ch.MakeDamka();
-
-	c.Render(*cgu);
-
-	ch.Render(*cgu);*/
-
 	::SendMessage(::GetConsoleWindow(), WM_SYSKEYDOWN, VK_RETURN, 0x20000000);
+
+	return 0;
 }
 

@@ -16,12 +16,12 @@ game_engine_core::GameObject::GameObject() : GameObject(0, 0, console_graphics::
 
 game_engine_core::GameObject::GameObject(const ushort& width, const ushort& height,
 	const WORD& backGround,
-	const WORD& selColor,
+	const WORD& focusColor,
 	vector<ushort> position, char* charsToDraw, size_t charsToDrawSize) :
 	m_width(width), m_height(height), m_backGround(backGround),
 	m_position(position),
-	m_selected(false), m_chars(charsToDraw), m_charsToDrawSize(charsToDrawSize),
-	m_selectionColor(selColor)
+	m_focused(false), m_chars(charsToDraw), m_charsToDrawSize(charsToDrawSize),
+	m_focusColor(focusColor)
 {
 
 }
@@ -31,10 +31,10 @@ game_engine_core::GameObject::GameObject(const GameObject& other)
 	m_width = other.m_width;
 	m_height = other.m_height;
 	m_backGround = other.m_backGround;
-	m_selected = other.m_selected;
+	m_focused = other.m_focused;
 	m_position = other.m_position;
 	m_charsToDrawSize = other.m_charsToDrawSize;
-	m_selectionColor = other.m_selectionColor;
+	m_focusColor = other.m_focusColor;
 
 	if (m_chars != nullptr)
 	{
@@ -60,9 +60,9 @@ game_engine_core::GameObject::~GameObject()
 
 #pragma region Getters
 
-WORD game_engine_core::GameObject::GetSelectionColor() const
+WORD game_engine_core::GameObject::GetFocusColor() const
 {
-	return m_selectionColor;
+	return m_focusColor;
 }
 
 size_t game_engine_core::GameObject::GetCharsToDrawSize() const
@@ -95,7 +95,7 @@ vector_math::vector<ushort> game_engine_core::GameObject::GetPosition() const
 	return m_position;
 }
 
-bool game_engine_core::GameObject::isSelected() const { return m_selected; }
+bool game_engine_core::GameObject::isFocused() const { return m_focused; }
 
 #pragma endregion
 
@@ -131,19 +131,19 @@ void game_engine_core::GameObject::SetPosition(const vector<ushort>& v)
 	m_position = v;
 }
 
-void game_engine_core::GameObject::SetSelectionColor(WORD selColor)
+void game_engine_core::GameObject::SetFocusColor(WORD selColor)
 {
-	m_selectionColor = selColor;
+	m_focusColor = selColor;
 }
 
-void game_engine_core::GameObject::Select()
+void game_engine_core::GameObject::Focus()
 {
-	m_selected = true;
+	m_focused = true;
 }
 
-void game_engine_core::GameObject::Deselct()
+void game_engine_core::GameObject::UnFocus()
 {
-	m_selected = false;
+	m_focused = false;
 }
 
 #pragma endregion
@@ -162,7 +162,7 @@ game_engine_core::GameObject& game_engine_core::GameObject::operator=(const Game
 
 	m_charsToDrawSize = other.m_charsToDrawSize;
 
-	m_selectionColor = other.m_selectionColor;
+	m_focusColor = other.m_focusColor;
 
 	if (m_chars != nullptr)
 	{
@@ -191,9 +191,9 @@ game_engine_core::GameObject& game_engine_core::GameObject::operator=(const Game
 game_engine_core::Killable::Killable() : GameObject(), m_alive(true) {}
 
 game_engine_core::Killable::Killable(const ushort& width, const ushort& height, const WORD& backGround,
-	const WORD& selColor,
+	const WORD& focusColor,
 	vector<ushort> position, char* charsToDraw, size_t charsToDrawSize) :
-	GameObject(width, height, backGround, selColor, position, charsToDraw, charsToDrawSize),
+	GameObject(width, height, backGround, focusColor, position, charsToDraw, charsToDrawSize),
 	m_alive(true)
 {
 
@@ -243,14 +243,15 @@ game_engine_core::Killable& game_engine_core::Killable::operator=(const Killable
 
 game_engine_core::Cell::Cell() : GameObject(), m_isWhite(false),
 m_borderColor(console_graphics::Colors::LIGHTGRAYBack | console_graphics::Colors::BLACK),
-m_BorderHighlightColor(console_graphics::Colors::GREENBack), m_borderHighLight(false) {}
+m_BorderHighlightColor(console_graphics::Colors::GREENBack),
+m_borderHighLight(false), m_Move_Selected(false) {}
 
 game_engine_core::Cell::Cell(const ushort& width, const ushort& height, const WORD& backGround,
 	const WORD& borderColor, const WORD& selColor, const WORD& borderHighlightColor,
 	vector<ushort> position, bool isWhite, char* charsToDraw, size_t charsToDrawSize)
 	: GameObject(width, height, backGround, selColor, position, charsToDraw, charsToDrawSize),
 	m_isWhite(isWhite), m_borderColor(borderColor), m_BorderHighlightColor(borderHighlightColor),
-	m_borderHighLight(false)
+	m_borderHighLight(false), m_Move_Selected(false)
 {
 	char* ptr = nullptr;
 
@@ -278,7 +279,8 @@ game_engine_core::Cell::Cell(const ushort& width, const ushort& height, const WO
 
 game_engine_core::Cell::Cell(const Cell& other) :
 	GameObject(other), m_isWhite(other.m_isWhite), m_borderColor(other.m_borderColor),
-	m_BorderHighlightColor(other.m_BorderHighlightColor), m_borderHighLight(other.m_borderHighLight) {}
+	m_BorderHighlightColor(other.m_BorderHighlightColor), m_borderHighLight(other.m_borderHighLight)
+{}
 
 #pragma endregion
 
@@ -303,12 +305,28 @@ game_engine_core::Cell& game_engine_core::Cell::operator=(const Cell& other)
 
 #pragma region Functions
 
-const WORD& game_engine_core::Cell::GetBorderSelectionColor() const
+bool game_engine_core::Cell::IsMoveSelected() const
+{
+	return m_Move_Selected;
+}
+
+void game_engine_core::Cell::SelectMove()
+{
+	m_Move_Selected = true;
+}
+
+void game_engine_core::Cell::DeSelectMove()
+{
+	m_Move_Selected = false;
+}
+
+
+const WORD& game_engine_core::Cell::GetBorderHighlightColor() const
 {
 	return m_BorderHighlightColor;
 }
 
-void game_engine_core::Cell::SetBorderSelectionColor(const WORD& borderHighlightColor)
+void game_engine_core::Cell::SetBorderHighlightColor(const WORD& borderHighlightColor)
 {
 	m_BorderHighlightColor = borderHighlightColor;
 }
@@ -345,7 +363,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 	auto backGroundColor = this->GetBackColor();
 
 	auto borderColor = this->GetBorderColor();
-
+	
 	ushort width = this->GetWidth();
 
 	ushort height = this->GetHeight();
@@ -358,9 +376,9 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 
 	bool dec_symbol = false;
 
-	bool selected = this->isSelected();
+	bool selected = this->isFocused();
 
-	auto sel_Color = this->GetSelectionColor();
+	auto focus_Color = this->GetFocusColor();
 
 	for (size_t i = 0; i < height; i++)
 	{
@@ -419,7 +437,7 @@ void game_engine_core::Cell::Render(console_graphics_utility& utility)
 			if (!dec_symbol) //Filler
 			{
 				selectedSymbol = ' ';
-				color = selected ? sel_Color : backGroundColor;
+				color = selected ? focus_Color : backGroundColor;
 			}
 
 			utility.Print(selectedSymbol, color);
@@ -517,8 +535,8 @@ bool game_engine_core::Checker::IsCheckerWhite() const
 
 void game_engine_core::Checker::Render(console_graphics::console_graphics_utility& utility)
 {
-	/*if (!this->isAlive())
-		return;*/
+	if (!this->isAlive())
+		return;
 
 	auto pos = this->GetPosition();
 
@@ -528,7 +546,7 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 
 	auto back = this->GetBackColor();
 
-	auto selColor = this->GetSelectionColor();
+	auto selColor = this->GetFocusColor();
 
 	//1) Calc 2 hor and vert midle elements
 
@@ -542,9 +560,9 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 
 	bool shouldPrint = false;
 
-	ushort last1;
+	ushort last1 = 0;
 
-	ushort last2;
+	ushort last2 = 0;
 
 	ushort tempi = 0;
 
@@ -562,7 +580,7 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 
 				if (!m_isDamka)//Ordinary Checker
 				{
-					utility.Print(*this->GetChars(), this->isSelected() ? selColor : back);
+					utility.Print(*this->GetChars(), this->isFocused() ? selColor : back);
 				}
 				else  //Checker is Damka
 				{
@@ -572,7 +590,7 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 					}
 					else
 					{
-						utility.Print(*(this->GetChars()), this->isSelected() ? selColor : back);
+						utility.Print(*(this->GetChars()), this->isFocused() ? selColor : back);
 					}
 				}
 
@@ -582,7 +600,7 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 			{
 				if (!m_isDamka)
 				{
-					utility.Print(*this->GetChars(), this->isSelected() ? selColor : back);
+					utility.Print(*this->GetChars(), this->isFocused() ? selColor : back);
 				}
 				else if (j > last1 && j < last2)
 				{
@@ -590,13 +608,13 @@ void game_engine_core::Checker::Render(console_graphics::console_graphics_utilit
 				}
 				else
 				{
-					utility.Print(*(this->GetChars()), this->isSelected() ? selColor : back);
+					utility.Print(*(this->GetChars()), this->isFocused() ? selColor : back);
 				}
 
 			}
 			else if (i >= Vertmid2 && j >= (last1 + tempi - 1) && j <= (last2 - tempi + 1))
 			{
-				utility.Print(*this->GetChars(), this->isSelected() ? selColor : back);
+				utility.Print(*this->GetChars(), this->isFocused() ? selColor : back);
 			}
 		}
 	}
@@ -651,7 +669,7 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 
 	auto CellBorderColor = m_cellBuildingOptions->GetBorderColor();
 
-	auto selColor = m_cellBuildingOptions->GetSelectionColor();
+	auto focusColor = m_cellBuildingOptions->GetFocusColor();
 
 	///Checkers initialization
 
@@ -684,11 +702,12 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 			*(m_board[i] + j) = Cell(Cellwidth, Cellheight,
 				whiteBlack == true ? CellWhiteColor : CellBlackColor,
 				CellBorderColor,
-				selColor, CellBorderHighlightColor,
+				focusColor, CellBorderHighlightColor,
 				positionTemp, whiteBlack);
 
 			if (!m_board[i][j].IsWhite())
 			{
+				//Main function of checkers deploy
 				if (i >= 0 && i <= 2)//Place Black Checkers
 				{
 					*(m_checkers + k) = Checker(CheckerWidth, CheckerHeight,
@@ -703,6 +722,7 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 
 					k++;
 				}
+
 			}
 
 			if (j != 8 - 1)
@@ -832,6 +852,193 @@ bool game_engine_core::GameController::OutOfBorders(const vector<short>& positio
 #pragma endregion
 }
 
+vector_math::vector<short> game_engine_core::GameController::FindOrthogonalVector(const vector<short>& v) const
+{
+	vector<short> result;
+
+	size_t count = std::size(m_dirVectors);
+	
+	vector<short> oneInput = vector<short>(v[0] / std::abs(v[0]), v[1] / std::abs(v[1]));
+
+	vector<short> oneDirVector;
+
+	for (size_t i = 0; i < count; i++)
+	{
+		oneDirVector = vector<short>(m_dirVectors[i][0] / std::abs(m_dirVectors[i][0]), m_dirVectors[i][1] / std::abs(m_dirVectors[i][1]));
+
+		if (oneDirVector * oneInput == 0)
+		{
+			result = m_dirVectors[i];
+
+			break;
+		}
+	}
+
+	return result;
+}
+
+void game_engine_core::GameController::FindAllPosibleTurnsForKingRecursive(const vector<short>& position,
+	vector<short>& prevPosition, bool& on_Callback, const vector<short>& dirVector,
+	bool checker_under_attack)
+{
+	//Base Case
+
+	m_console_graphics_utility->SetCursorPosition(position.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
+
+	if (OutOfBorders(position) && checker_under_attack)//If we have take 1 checker already 
+	{
+		on_Callback = true;
+
+		return;
+	}
+
+	if (OutOfBorders(position))
+	{
+		return;
+	}
+	//Way separator
+	if (position == prevPosition && !checker_under_attack)
+	{
+		size_t count = std::size(m_dirVectors);
+
+		for (size_t i = 0; i < count; i++)
+		{
+			//Examine all directions but only if we are at he same cell position as our King is.
+			FindAllPosibleTurnsForKingRecursive(position + m_dirVectors[i], prevPosition, on_Callback, m_dirVectors[i]);
+		}
+	}
+	else
+	{
+		//determine wether next cell is empty
+		auto enemyChecker = FindCheckerUsingPosition(position);
+
+		if (enemyChecker == nullptr)
+		{
+			auto Cell = FindCellUsingPosition(position);
+
+			if (!on_Callback)
+			{
+				m_possibleTurns.AddToTheEnd(Cell);
+				//next cell is empty make another move.
+				FindAllPosibleTurnsForKingRecursive(position + dirVector, prevPosition, on_Callback, dirVector, checker_under_attack);
+			}
+
+			if(on_Callback)
+			{
+				m_console_graphics_utility->SetCursorPosition(position.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
+
+				Checker* ch = FindCheckerUsingPosition(position + (dirVector * -1));
+				
+				if (ch != nullptr)
+				{
+					if (ch->IsCheckerWhite() != m_selectedChecker->IsCheckerWhite())
+					{
+					}
+					else
+					{
+						m_possibleTurns.RemoveNode(Cell);
+
+						return;
+					}					
+				}
+				else
+				{
+					m_possibleTurns.RemoveNode(Cell);
+
+					return;
+				}
+				
+				return;
+			}
+			
+		}
+		else //Next cell is not empty maybe there can be enemy checker
+		{
+			bool nextIsFriend = m_selectedChecker->IsCheckerWhite() == enemyChecker->IsCheckerWhite();
+		
+			if (nextIsFriend)//It is the checker who's color is the same with the King
+			{
+				if (checker_under_attack)
+				{
+					on_Callback = true;
+				}
+
+				return;//Stop search of possible moves
+			}
+			else//Enemy checker detected
+			{
+				//Need to understand wether it is open or not
+				vector<short> positionBehind_theEnemyChecker = position + dirVector;
+
+				m_console_graphics_utility->SetCursorPosition(positionBehind_theEnemyChecker.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
+
+				//Attack is Imposible 
+				if (OutOfBorders(positionBehind_theEnemyChecker))
+				{
+					if (checker_under_attack)
+					{
+						on_Callback = true;
+					}
+
+					return;
+				}
+
+				auto Checker_Behind = FindCheckerUsingPosition(positionBehind_theEnemyChecker);
+
+				if (Checker_Behind == nullptr)//Enemy checker is open -> Attack it
+				{
+					if (!m_checkersToBeKilled.Contains(enemyChecker))
+					{
+						m_checkersToBeKilled.AddToTheEnd(enemyChecker);
+
+						m_multipleTakes++;
+					}
+					else
+					{
+						return;
+					}
+					
+
+					//Find 2 ortogonal vectors to current direction
+
+					vector<short> orthogonal = FindOrthogonalVector(positionBehind_theEnemyChecker -
+						enemyChecker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT));
+
+					auto v1 = positionBehind_theEnemyChecker + orthogonal;
+
+					auto v2 = positionBehind_theEnemyChecker + orthogonal * -1;
+
+					bool CallBack = false;
+
+					//Expend Search in orthogonal direction to find the new possible targets
+					FindAllPosibleTurnsForKingRecursive(v1, v1, CallBack, orthogonal, true);
+					//Expend Search in orthogonal opposite direction to find the new possible targets
+
+					CallBack = false;
+
+					FindAllPosibleTurnsForKingRecursive(v2, v2, CallBack, orthogonal * -1, true);
+
+					CallBack = false;
+
+					FindAllPosibleTurnsForKingRecursive(positionBehind_theEnemyChecker, positionBehind_theEnemyChecker, CallBack, dirVector, true);
+				}
+				else
+				{
+					if (checker_under_attack)
+					{
+						on_Callback = true;
+					}
+
+					return;//Checker is Covered and Attack is impossible
+				}
+
+			}
+		}
+
+
+	}
+}
+
 void game_engine_core::GameController::FindPossibleTurnRecursive(
 	const vector<short>& position,
 	vector<short>& startPosition, const vector<short>& dirVector, bool multiKill)
@@ -891,7 +1098,7 @@ void game_engine_core::GameController::FindPossibleTurnRecursive(
 						return;
 					}
 
-					m_multipleMoves++;
+					m_multipleTakes++;
 
 					m_possibleTurns.AddToTheEnd(FindCellUsingPosition(posBehind));
 
@@ -932,14 +1139,14 @@ void game_engine_core::GameController::FindPossibleTurnRecursive(
 
 void game_engine_core::GameController::HighLightPossibleTurns()
 {
-	m_possibleTurns.Iterate([](Cell* ptr) { ptr->HighlightBorder(); });
+	m_possibleTurns.Iterate([](Cell* ptr)->bool { ptr->HighlightBorder(); return true; });
 
 	system("CLS");
 
 	Draw();
 }
 
-bool game_engine_core::GameController::IsGameOver(bool &winner)
+bool game_engine_core::GameController::IsGameOver(bool& winner)
 {
 	size_t count = m_checkersCount;
 
@@ -953,12 +1160,12 @@ bool game_engine_core::GameController::IsGameOver(bool &winner)
 	{
 		if (i >= 0 && i <= mid && (m_checkers + i)->isAlive())
 		{
-			BlackAlivedCount++;			
+			BlackAlivedCount++;
 		}
 		else if (i > mid && i < count && (m_checkers + i)->isAlive())
 		{
 			whiteAlivedCount++;
-		}			
+		}
 	}
 
 	if (whiteAlivedCount == 0 && BlackAlivedCount > 0)//White loses
@@ -980,40 +1187,29 @@ bool game_engine_core::GameController::IsGameOver(bool &winner)
 void game_engine_core::GameController::DeselectAllGameObjects()
 {
 	//Deselect
-
-	m_selectedChecker->Deselct();
-
-	m_possibleTurns.Iterate([](Cell* cell) { cell->UnHighLightBorder(); });
-
 	CellBuildingOptions* cboptr = m_cellBuildingOptions;
 
-	m_selectedRouts.Iterate([cboptr](Cell* cell) { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() :
-		cboptr->GetBlackColor());
+	m_selectedChecker->UnFocus();
 
-	cell->Deselct();
+	m_possibleTurns.Iterate([cboptr](Cell* cell)->bool
+		{
+			cell->UnHighLightBorder();
+			cell->SetBorderHighlightColor(cboptr->GetBorderHighlightColor());
+			cell->DeSelectMove();
+			cell->UnFocus();
+
+			return true;
 		});
 
-	/*system("CLS");
-
-	this->Draw();*/
+	m_selectedRouts.Iterate([cboptr](Cell* cell) -> bool { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() :
+		cboptr->GetBlackColor());
+	return true;
+		});
 }
 
 void game_engine_core::GameController::Move()
 {
 	size_t selRoutsCount = m_selectedRouts.GetCount();
-
-	m_selectedChecker->SetPosition(m_selectedRouts[selRoutsCount - 1]->GetPosition());
-
-	//Determine Damka
-
-	if (m_selectedChecker->IsCheckerWhite() && m_selectedChecker->GetPosition()["Y"] <= m_Board_position["Y"])//White Checker
-	{
-		m_selectedChecker->MakeDamka();
-	}
-	else if(m_selectedChecker->GetPosition()["Y"] >= m_Board_position["Y"] + m_boardHeight - m_cellBuildingOptions->GetCellHeight())
-	{
-		m_selectedChecker->MakeDamka();
-	}
 
 	auto chToBeKilledPtr = &m_checkersToBeKilled;
 
@@ -1021,42 +1217,80 @@ void game_engine_core::GameController::Move()
 
 	const auto& boardWidth = m_boardWidth;
 
+	Checker* selCheckerPtr = m_selectedChecker;
+
 	//Fighting
 
 	//Ordinary fightting
 
+
+	m_selectedRouts.Iterate([selCheckerPtr, chToBeKilledPtr, boardPos, boardWidth](Cell* cell)->bool
+		{
+			auto Sel_pos = cell->GetPosition();//Take 1 selected position
+			//Calculate direction vector from slected checker position to selected cell position
+			auto MoveDir = Sel_pos - selCheckerPtr->GetPosition();
+			//Move selected checker to selected cell position
+			selCheckerPtr->SetPosition(Sel_pos);
+
+			if (chToBeKilledPtr->isEmpty())
+			{
+				return false;
+			}
+
+			//Find vector colinear to one of the Dir vectors
+			size_t dirVectorsCount = std::size(m_dirVectors);
+
+			vector<short> colinearToDirection = vector<short>(0, 0);
+
+			vector<short> diff;
+
+			for (size_t i = 0; i < dirVectorsCount; i++)
+			{
+				if (m_dirVectors[i].IsCoDirectional(MoveDir.Convert_To(value_convertion::Converters::USHORT_TO_SHORT)))
+				{
+					colinearToDirection = m_dirVectors[i];
+
+					break;
+				}
+			}
+
+			if (colinearToDirection != vector<short>(0, 0))
+			{
+				diff = selCheckerPtr->GetPosition().
+					Convert_To(value_convertion::Converters::USHORT_TO_SHORT)
+					- colinearToDirection;
+			}
+
+			//Iterate all posible checkers for kill
+			chToBeKilledPtr->Iterate([diff,
+				boardPos, boardWidth](Checker* ch)->bool
+				{
+					if (diff.Convert_To(value_convertion::Converters::SHORT_TO_USHORT) == ch->GetPosition())
+					{
+						ch->Kill();
+
+						ch->SetPosition(vector<ushort>(boardPos[0] + boardWidth + 10, 2));
+					}
+					return true;
+				}
+
+			);
+			return true;
+		});
+
+
+	//Determine Damka
 	if (!m_selectedChecker->IsDamka())
 	{
-		m_selectedRouts.Iterate([chToBeKilledPtr, boardPos, boardWidth](Cell* cell)
-			{
-				auto Sel_pos = cell->GetPosition();
-
-				chToBeKilledPtr->Iterate([Sel_pos, boardPos, boardWidth](Checker* ch)
-					{
-						vector<short> v = ch->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT) -
-							Sel_pos.Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
-
-						size_t dirVectorsCount = std::size(m_dirVectors);
-
-						for (size_t i = 0; i < dirVectorsCount; i++)
-						{
-							if (v == m_dirVectors[i])
-							{
-								ch->Kill();
-
-								ch->SetPosition(vector<ushort>(boardPos[0] + boardWidth, 2));
-							}
-						}
-					}
-
-				);
-			});
+		if (m_selectedChecker->IsCheckerWhite() && m_selectedChecker->GetPosition()["Y"] <= m_Board_position["Y"])//White Checker
+		{
+			m_selectedChecker->MakeDamka();
+		}
+		else if (!m_selectedChecker->IsCheckerWhite() && m_selectedChecker->GetPosition()["Y"] >= m_Board_position["Y"] + m_boardHeight - m_cellBuildingOptions->GetCellHeight())
+		{
+			m_selectedChecker->MakeDamka();
+		}
 	}
-	else
-	{
-
-	}
-	
 }
 
 void game_engine_core::GameController::SelectMove(std::function<void()> PrintFunc,
@@ -1069,7 +1303,7 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 
 	char input;
 
-	size_t start = 0;
+	int start = 0;
 
 	size_t end = m_possibleTurns.GetCount();
 
@@ -1079,15 +1313,17 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 
 	auto cboptr = m_cellBuildingOptions;
 
-	bool select_= false;
-	
+	auto MoveSelectionColor = m_cellBuildingOptions->GetMoveSelectColor();
+
+	auto BorderHighLightColor = m_cellBuildingOptions->GetBorderHighlightColor();
+
 	do
 	{
 		do
 		{
 			ptr = m_possibleTurns[start];
 
-			ptr->Select();
+			ptr->Focus();
 
 			system("CLS");
 
@@ -1132,8 +1368,8 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 			}
 
 			if (ptr != nullptr)
-				if (ptr->isSelected())
-					ptr->Deselct();
+				if (ptr->isFocused())
+					ptr->UnFocus();
 
 			if (start > end - 1)
 			{
@@ -1146,26 +1382,33 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 
 			if (input == cptr[2] || input == std::toupper(cptr[2]))//Select cell
 			{
-				if (!select_)
+				if (!ptr->IsMoveSelected())
 				{
-					ptr->SetBackColor(ptr->GetSelectionColor());
+					ptr->SelectMove();
+
+					ptr->SetBorderHighlightColor(MoveSelectionColor);
 
 					m_selectedRouts.AddToTheEnd(ptr);
-
-					select_ = true;
 				}
 				else
 				{
-					ptr->SetBackColor(ptr->IsWhite() ? cboptr->GetWhiteColor() : cboptr->GetBlackColor());
+					ptr->DeSelectMove();
+
+					ptr->SetBorderHighlightColor(BorderHighLightColor);
 
 					m_selectedRouts.RemoveNode(ptr);
-
-					select_ = false;
 				}
-				
+			}
+			else if (input == cptr[4] || input == std::toupper(cptr[4]))//Confirm Pressed
+			{
+				break;
 			}
 
-			if ((m_multipleMoves <= 0) && select_)//true -> break
+			if ((m_multipleTakes <= 0) && ptr->IsMoveSelected())//true -> break
+			{
+				break;
+			}
+			else if (IsAllPossibleTurnsSelected() && m_multipleTakes > 0)
 			{
 				break;
 			}
@@ -1190,24 +1433,39 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 
 		if (input == m_controls[4] || input == std::toupper(m_controls[4]))
 		{
-			select_ = false;
+			m_possibleTurns.Iterate([cboptr, BorderHighLightColor](Cell* cell)->bool
+				{
+					cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() : cboptr->GetBlackColor());
 
-			m_possibleTurns.Iterate([cboptr](Cell* cell) { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() : cboptr->GetBlackColor()); });
+					cell->SetBorderHighlightColor(BorderHighLightColor);
+
+					return true;
+				});
+
+			m_selectedRouts.Iterate([](Cell* cell)-> bool
+				{
+					cell->DeSelectMove();
+
+					return true;
+				}
+			);
 
 			m_selectedRouts.Clear();
 		}
 
 	} while (!(input == cptr[3] || input == std::toupper(cptr[3])));
-	
+
 }
 
 bool game_engine_core::GameController::IsAllPossibleTurnsSelected()
 {
 	bool result = true;
 
-	m_possibleTurns.Iterate([&result](Cell* cell)
+	m_possibleTurns.Iterate([&result](Cell* cell)-> bool
 		{
-			result = cell->isSelected();
+			result = cell->isFocused();
+
+			return true;
 		});
 
 	return result;
@@ -1215,7 +1473,7 @@ bool game_engine_core::GameController::IsAllPossibleTurnsSelected()
 
 void game_engine_core::GameController::FindPossibleTurns()
 {
-	m_multipleMoves = -1;
+	m_multipleTakes = -1;
 
 	m_possibleTurns.Clear();
 
@@ -1223,13 +1481,21 @@ void game_engine_core::GameController::FindPossibleTurns()
 
 	m_selectedRouts.Clear();
 
-	vector<ushort> pos = m_selectedChecker->GetPosition();
+	vector<short> pos = m_selectedChecker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
+	
+	bool CallBack = false;
+	
+	if (m_selectedChecker->IsDamka())
+	{
+		m_multipleTakes = 1;
 
-	vector<short> selectedCheckerPos = vector<short>(pos[0], pos[1]);
+		FindAllPosibleTurnsForKingRecursive(pos, pos, CallBack);
+	}
+	else
+	{
+		FindPossibleTurnRecursive(pos, pos);
+	}
 
-	vector<short> checkerTempPosition = selectedCheckerPos;
-
-	FindPossibleTurnRecursive(selectedCheckerPos, checkerTempPosition);
 }
 
 void game_engine_core::GameController::Draw()
@@ -1280,8 +1546,8 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 
 {
 	if (m_selectedChecker != nullptr)
-		if (m_selectedChecker->isSelected())
-			m_selectedChecker->Deselct();
+		if (m_selectedChecker->isFocused())
+			m_selectedChecker->UnFocus();
 
 	char* cptr = m_controls;
 
@@ -1294,6 +1560,8 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 	int end;
 
 	int mid = (m_checkersCount / 2) - 1; //11	
+
+	Checker* temp = nullptr;
 
 	if (!whiteblack)//Black
 	{
@@ -1314,9 +1582,23 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 	{
 		do
 		{
+			temp = m_checkers + index;
+
+			while (!temp->isAlive())//Manual shifting
+			{
+				index += 1;
+
+				if (index < start)
+					index = end;
+				else if (index > end)
+					index = start;
+
+				temp = m_checkers + index;
+			}
+
 			m_selectedChecker = m_checkers + index;
 
-			m_selectedChecker->Select();
+			m_selectedChecker->Focus();
 
 			system("CLS");
 
@@ -1353,15 +1635,15 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 			}
 
 			if (m_selectedChecker != nullptr)
-				if (m_selectedChecker->isSelected())
-					m_selectedChecker->Deselct();
+				if (m_selectedChecker->isFocused())
+					m_selectedChecker->UnFocus();
 
 			if (index < start)
 				index = end;
 			else if (index > end)
 				index = start;
 
-			auto temp = m_checkers + index;
+			temp = m_checkers + index;
 
 			while (!temp->isAlive())//Manual shifting
 			{
@@ -1387,8 +1669,8 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 		} while (!(input == *(m_controls + 2) || input == std::toupper(*(m_controls + 2))));
 
 		if (m_selectedChecker != nullptr)
-			if (!m_selectedChecker->isSelected())
-				m_selectedChecker->Select();
+			if (!m_selectedChecker->isFocused())
+				m_selectedChecker->Focus();
 
 		system("CLS");
 
@@ -1415,7 +1697,7 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 			continue;
 		}
 
-	} while (!(input == *(m_controls + 3) || input == std::toupper(*(m_controls + 3))));	
+	} while (!(input == *(m_controls + 3) || input == std::toupper(*(m_controls + 3))));
 }
 
 
@@ -1423,7 +1705,7 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 
 #pragma region Static definitions
 
-signed char game_engine_core::GameController::m_multipleMoves = -1;
+signed char game_engine_core::GameController::m_multipleTakes = -1;
 
 bool game_engine_core::GameController::m_init = false;
 
@@ -1453,22 +1735,28 @@ vector_math::vector<short> game_engine_core::GameController::m_boardBasis[2] =
 
 game_engine_core::CellBuildingOptions::CellBuildingOptions(
 	WORD BlackColor,
-	WORD WhiteColor, WORD borderColor, WORD borderHighlightColor, WORD selColor,
+	WORD WhiteColor, WORD borderColor, WORD borderHighlightColor, WORD focusColor,
+	WORD border_Selection_Color,
 	ushort width, ushort height) :
 	m_cellWidth(width), m_cellHeight(height), m_blackColor(BlackColor), m_whiteColor(WhiteColor),
-	m_borderColor(borderColor), m_SelectionColor(selColor),
-	m_BorderHighlightColor(borderHighlightColor)
-
+	m_borderColor(borderColor), m_FocusColor(focusColor),
+	m_BorderHighlightColor(borderHighlightColor),
+	m_MoveSelectColor(border_Selection_Color)
 {}
 
 game_engine_core::CellBuildingOptions::CellBuildingOptions(ushort width, ushort height) :
 	CellBuildingOptions(console_graphics::Colors::BLACKBack,
 		console_graphics::Colors::WhiteBack, console_graphics::Colors::BLACK |
 		console_graphics::Colors::LIGHTGRAYBack, console_graphics::Colors::GREENBack,
-		console_graphics::Colors::ORANGEBack,
+		console_graphics::Colors::ORANGEBack, console_graphics::Colors::ORANGEBack | console_graphics::Colors::BLACK,
 		width, height) {}
 
 #pragma endregion
+
+const WORD& game_engine_core::CellBuildingOptions::GetMoveSelectColor() const
+{
+	return m_MoveSelectColor;
+}
 
 const WORD& game_engine_core::CellBuildingOptions::GetBorderHighlightColor() const
 {
@@ -1505,9 +1793,9 @@ const ushort& game_engine_core::CellBuildingOptions::GetCellHeight() const
 	return m_cellHeight;
 }
 
-const WORD& game_engine_core::CellBuildingOptions::GetSelectionColor() const
+const WORD& game_engine_core::CellBuildingOptions::GetFocusColor() const
 {
-	return m_SelectionColor;
+	return m_FocusColor;
 }
 
 #pragma endregion
