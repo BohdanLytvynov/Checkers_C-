@@ -85,9 +85,9 @@ namespace console_graphics
 
 	struct console_graphics_utility
 	{		
-		void SetCursorPosition(const vector<ushort> &vector);
+		void SetCursorPosition(const Vector<ushort> &vector);
 
-		vector<ushort> GetCursorPosition() const;
+		Vector<ushort> GetCursorPosition() const;
 		
 		void Print(char c, WORD foreGround = console_graphics::Colors::White);
 
@@ -95,9 +95,9 @@ namespace console_graphics
 		
 		void PrintAtCenter(std::string s, WORD foreGround = console_graphics::Colors::White, ushort offset = 0);
 
-		void Print(std::string s, vector<ushort> position, WORD foreGround = console_graphics::Colors::White);
+		void Print(std::string s, Vector<ushort> position, WORD foreGround = console_graphics::Colors::White);
 
-		void Print(char c, vector<ushort> position, WORD foreGround = console_graphics::Colors::White);
+		void Print(char c, Vector<ushort> position, WORD foreGround = console_graphics::Colors::White);
 
 		const ushort& GetConsoleWidth() const;
 
@@ -114,7 +114,7 @@ namespace console_graphics
 
 		HANDLE m_consoleHandle;
 
-		vector<ushort> m_position;
+		Vector<ushort> m_position;
 
 		ushort m_width;
 

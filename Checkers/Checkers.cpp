@@ -3,6 +3,8 @@
 #include"GameEngine.h"
 #include"Console_graphics.h"
 #include<cstdlib>
+#include"DataStructures.h"
+
 #pragma region Functions
 
 
@@ -38,7 +40,7 @@ int main()
 
 	bool whiteBlack_Winner = false;
 
-	vector_math::vector<ushort> CheckerBoardPosition = vector_math::vector<ushort>(5, 1);
+	vector_math::Vector<ushort> CheckerBoardPosition = vector_math::Vector<ushort>(5, 1);
 
 	ushort consoleHeight = cgu->GetConsoleHeight();
 
@@ -48,7 +50,7 @@ int main()
 
 	ushort temp = 30;
 
-	vector_math::vector<ushort> textPos = vector_math::vector<ushort>(CheckerBoardLength + CheckerBoardPosition[0] +
+	vector_math::Vector<ushort> textPos = vector_math::Vector<ushort>(CheckerBoardLength + CheckerBoardPosition[0] +
 		temp, consoleHeight / 2);
 
 	CellBuildingOptions cellOpt = CellBuildingOptions();
@@ -56,8 +58,10 @@ int main()
 	CheckerBuildingOptions checkOpt = CheckerBuildingOptions(console_graphics::Colors::BLUEBack,
 		console_graphics::Colors::REDBack, console_graphics::Colors::GREENBack);
 
+	ai_modules::checker_ai* ai = new ai_modules::checker_ai(cgu);
+
 	game_engine_core::GameController* gc = GameController::Initialize(cgu, CheckerBoardPosition,
-		&cellOpt, &checkOpt);
+		&cellOpt, &checkOpt, ai);
 	
 	char input;
 
@@ -71,75 +75,97 @@ int main()
 
 #pragma endregion
 
+#pragma region DoubledLinked List
 
+	/*linear_data_structures::circular_doubled_linked_list<int> dll;
+
+	dll.AddToTheBegining(1);
+
+	dll.AddToTheBegining(2);
+
+	dll.AddToTheBegining(3);
+
+	dll.IterateFromStartToEnd([](int elem)->bool { std::cout << elem << endl; return true; });
+
+	dll.~circular_doubled_linked_list();*/
+
+#pragma endregion
 	
 #pragma region Game
 		
 	do
 	{
-		cgu->PrintAtCenter("<<<Checkers the Game>>>");
-
-		//Selection menu
-		input = console_funcs::Input<char, char>([cgu](char inp)->bool
-			{
-				if (inp == '1' || inp == '2' || inp == '3')
-				{
-					return true;
-				}
-				else
-				{
-					cgu->Print("Incorrect Input!");
-
-					return false;
-				}
-
-				return true;
-
-			}, false, nullptr, "Choose an option:\n\t Press 1 -> 2 Players \n\t Press 2 -> 1 Player\n\t Press 3 -> if you want to exit");
-
+//		cgu->PrintAtCenter("<<<Checkers the Game>>>");
+//
+//		//Selection menu
+//		input = console_funcs::Input<char, char>([cgu](char inp)->bool
+//			{
+//				if (inp == '1' || inp == '2' || inp == '3')
+//				{
+//					return true;
+//				}
+//				else
+//				{
+//					cgu->Print("Incorrect Input!");
+//
+//					return false;
+//				}
+//
+//				return true;
+//
+//			}, false, nullptr, "Choose an option:\n\t Press 1 -> 2 Players \n\t Press 2 -> 1 Player\n\t Press 3 -> if you want to exit");
+//
 #pragma region Main game cycle
-		
-		std::system("CLS");
+//		
+//		std::system("CLS");
+//
+//		if (input == '1')
+//		{
+//			cgu->Print("You have selected option 2 Players!");
+//
+//			pl1 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
+//				"Enter name of the first Player(white Checkers): ");
+//
+//			pl2 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
+//				"Enter name of the second Player(black Checkers): ");
+//		}
+//		else if (input == '2')
+//		{
+//			cgu->Print("You have selected option 1 Player!");
+//
+//			pl1 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
+//				"Enter name of the first Player(white Checkers): ");
+//			
+//			pl2 = comp_names[std::rand() % size(comp_names)];
+//
+//			
+//		}
+//		else if (input == '3')
+//		{
+//			return 0;
+//		}
+//
+//		cgu->Print("1 - Player: " + pl1);
+//
+//		cgu->Print("2 - Player: " + pl2);
+//
+//		input = console_funcs::Input<char, char>([](char inp)->bool {return true; }, true, nullptr,
+//			"Are you ready to start game? press y or n: ");
+//
+//		if (input == 'y' || input == 'Y')
+//		{
+//			start = true;
+//		}
+//
+//		string name1 = "white_Checkers: " + pl1;
+//
+//		string name2 = "black_Checkers: " + pl2;
 
-		if (input == '1')
-		{
-			cgu->Print("You have selected option 2 Players!");
+		start = true;
 
-			pl1 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
-				"Enter name of the first Player(white Checkers): ");
+		string name1 = "Pl1";
 
-			pl2 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
-				"Enter name of the second Player(black Checkers): ");
-		}
-		else if (input == '2')
-		{
-			cgu->Print("You have selected option 1 Player!");
-
-			pl1 = console_funcs::Input<string, string>([](string inp)->bool {return true; }, true, nullptr,
-				"Enter name of the first Player(white Checkers): ");
-
-			pl2 = comp_names[std::rand() % size(comp_names)];
-		}
-		else if (input == '3')
-		{
-			return 0;
-		}
-
-		cgu->Print("1 - Player: " + pl1);
-
-		cgu->Print("2 - Player: " + pl2);
-
-		input = console_funcs::Input<char, char>([](char inp)->bool {return true; }, true, nullptr,
-			"Are you ready to start game? press y or n: ");
-
-		if (input == 'n' || input == 'N')
-		{
-			start = true;
-		}
-
-		string name1 = "white_Checkers: " + pl1;
-
-		string name2 = "white_Checkers: " + pl2;
+		string name2 = "Pl2";
 
 		if (start)
 		{
@@ -155,10 +181,10 @@ int main()
 							textPos);
 
 						cgu->Print("By pressing A D please chose the checker you want to use for the turn.",
-							textPos + vector_math::vector<ushort>(0, 1));
+							textPos + vector_math::Vector<ushort>(0, 1));
 
 						cgu->Print("After you chose the propriate object press s.",
-							textPos + vector_math::vector<ushort>(0, 2));
+							textPos + vector_math::Vector<ushort>(0, 2));
 					}, [cgu, textPos, whiteBlack]()
 					{
 						cgu->PrintAtCenter("<<<Checkers the Game>>>");
@@ -167,19 +193,19 @@ int main()
 							textPos);
 
 						cgu->Print("                                   ",
-							textPos + vector_math::vector<ushort>(0, 1));
+							textPos + vector_math::Vector<ushort>(0, 1));
 
 						cgu->Print("                                   ",
-							textPos + vector_math::vector<ushort>(0, 2));
+							textPos + vector_math::Vector<ushort>(0, 2));
 
 						cgu->Print("Selection done succesfuly!",
 							textPos);
 
 						cgu->Print("Press c to confirm your selection. ",
-							textPos + vector_math::vector<ushort>(0, 1));
+							textPos + vector_math::Vector<ushort>(0, 1));
 
 						cgu->Print("If you want to cancel move set press r!        ",
-							textPos + vector_math::vector<ushort>(0, 2));
+							textPos + vector_math::Vector<ushort>(0, 2));
 					});
 
 				gc->FindPossibleTurns();
@@ -196,22 +222,22 @@ int main()
 							textPos);
 
 						cgu->Print("By pressing A D please chose the cell you want to use for the turn.",
-							textPos + vector_math::vector<ushort>(0, 1));
+							textPos + vector_math::Vector<ushort>(0, 1));
 
 						cgu->Print("After you chose the propriate object press s.",
-							textPos + vector_math::vector<ushort>(0, 2));
+							textPos + vector_math::Vector<ushort>(0, 2));
 
 						cgu->Print("In case of multiselection: By using A D choose the turn",
-							textPos + vector_math::vector<ushort>(0, 3));
+							textPos + vector_math::Vector<ushort>(0, 3));
 
 						cgu->Print("then press s to select this move. After you have choosen all",
-							textPos + vector_math::vector<ushort>(0, 4));
+							textPos + vector_math::Vector<ushort>(0, 4));
 
 						cgu->Print("the turns you want press c to confirm this moveset, if you want",
-							textPos + vector_math::vector<ushort>(0, 5));
+							textPos + vector_math::Vector<ushort>(0, 5));
 
 						cgu->Print("to change it, press r, it will clear the selected moveset",
-							textPos + vector_math::vector<ushort>(0, 6));
+							textPos + vector_math::Vector<ushort>(0, 6));
 					}, [cgu, textPos, whiteBlack]()
 					{
 						cgu->PrintAtCenter("<<<Checkers the Game>>>");
@@ -220,31 +246,31 @@ int main()
 							textPos);
 
 						cgu->Print("                                                                   ",
-							textPos + vector_math::vector<ushort>(0, 1));
+							textPos + vector_math::Vector<ushort>(0, 1));
 
 						cgu->Print("                                                                   ",
-							textPos + vector_math::vector<ushort>(0, 2));
+							textPos + vector_math::Vector<ushort>(0, 2));
 
 						cgu->Print("                                                                   ",
-							textPos + vector_math::vector<ushort>(0, 3));
+							textPos + vector_math::Vector<ushort>(0, 3));
 
 						cgu->Print("                                                                   ",
-							textPos + vector_math::vector<ushort>(0, 4));
+							textPos + vector_math::Vector<ushort>(0, 4));
 
 						cgu->Print("                                                                   ",
-							textPos + vector_math::vector<ushort>(0, 5));
+							textPos + vector_math::Vector<ushort>(0, 5));
 
 						cgu->Print("                                                                   ",
-							textPos + vector_math::vector<ushort>(0, 6));
+							textPos + vector_math::Vector<ushort>(0, 6));
 
 						cgu->Print("Selection done succesfuly!",
 							textPos);
 
 						cgu->Print("Press c to confirm your selection.                                   ",
-							textPos + vector_math::vector<ushort>(0, 1));
+							textPos + vector_math::Vector<ushort>(0, 1));
 
 						cgu->Print("If you want to cancel move set press r!                              ",
-							textPos + vector_math::vector<ushort>(0, 2));
+							textPos + vector_math::Vector<ushort>(0, 2));
 					});
 
 				gc->Move();

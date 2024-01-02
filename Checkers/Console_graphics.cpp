@@ -111,14 +111,14 @@ console_graphics::console_graphics_utility::Init(const HANDLE& consoleHandle, WO
 	}
 }
 
-void console_graphics::console_graphics_utility::SetCursorPosition(const vector<ushort> &v)
+void console_graphics::console_graphics_utility::SetCursorPosition(const Vector<ushort> &v)
 {
 	m_position = v;
 
 	SetConsoleCursorPosition(m_consoleHandle, {(short)m_position[0], (short)m_position[1]});
 }
 
-vector_math::vector<ushort> console_graphics::console_graphics_utility::GetCursorPosition() const
+vector_math::Vector<ushort> console_graphics::console_graphics_utility::GetCursorPosition() const
 {
 	return m_position;
 }
@@ -163,7 +163,7 @@ void console_graphics::console_graphics_utility::Print(std::string s, WORD foreG
 
 void console_graphics::console_graphics_utility::PrintAtCenter(std::string s, WORD foreGround, ushort yoffset)
 {
-	SetCursorPosition(vector<ushort>(m_width / 2 - s.size() / 2, yoffset));
+	SetCursorPosition(Vector<ushort>(m_width / 2 - s.size() / 2, yoffset));
 
 	if (m_defColor == foreGround)
 		std::cout << s << std::endl;
@@ -177,14 +177,14 @@ void console_graphics::console_graphics_utility::PrintAtCenter(std::string s, WO
 	}
 }
 
-void console_graphics::console_graphics_utility::Print(std::string s, vector<ushort> position, WORD foreGround)
+void console_graphics::console_graphics_utility::Print(std::string s, Vector<ushort> position, WORD foreGround)
 {
 	console_graphics::console_graphics_utility::SetCursorPosition(position);
 
 	Print(s, foreGround);
 }
 
-void console_graphics::console_graphics_utility::Print(char c, vector<ushort> position, WORD foreGround)
+void console_graphics::console_graphics_utility::Print(char c, Vector<ushort> position, WORD foreGround)
 {
 	console_graphics::console_graphics_utility::SetCursorPosition(position);
 
