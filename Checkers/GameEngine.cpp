@@ -1114,6 +1114,18 @@ void game_engine_core::ai_modules::checker_ai::Move(Vector<ushort> selPosition)
 
 	if (chToBeKilledPtr->isEmpty())
 	{
+		if (!m_selectedChecker->IsDamka())
+		{
+			if (m_selectedChecker->IsCheckerWhite() && m_selectedChecker->GetPosition()["Y"] <= m_Board_position["Y"])//White Checker
+			{
+				m_selectedChecker->MakeDamka();
+			}
+			else if (!m_selectedChecker->IsCheckerWhite() && m_selectedChecker->GetPosition()["Y"] >= m_Board_position["Y"] + m_boardHeight - m_Cell_Height)
+			{
+				m_selectedChecker->MakeDamka();
+			}
+		}
+
 		return;
 	}
 
@@ -1287,14 +1299,15 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 				m_possibleTurns.Clear();
 			}
 
-			BuildGameTreeRecursive(m_checkers + i, !whiteBlack, 2, 0, board);
+			BuildGameTreeRecursive(m_checkers + i, m_checkers + i, !whiteBlack, 2, 0, board);
 
 			//Analize game tree
 		}		
 	}
 }
 
-void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* checker, bool whiteBlack,
+void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* current_checker, 
+	Checker* prev_checker, bool whiteBlack,
 	size_t depth, size_t current_depth, Checker* border_Copy)
 {
 	using namespace nonlinear_data_structures;
@@ -1303,7 +1316,7 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 
 	using namespace value_convertion;
 
-	m_console_graphics_utility->SetCursorPosition(checker->GetPosition());
+	m_console_graphics_utility->SetCursorPosition(current_checker->GetPosition());
 
 	console_graphics_utility* cgu = m_console_graphics_utility;
 
@@ -1328,12 +1341,12 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 		end = mid;
 	}
 
-	m_selectedChecker = checker;
+	m_selectedChecker = current_checker;
 
 	auto pos = m_selectedChecker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
-	this->FindPossibleTurnRecursive(pos, pos, Vector<short>(), false,[this, start, end, border_Copy, checker, cgu,
-		whiteBlack, depth, current_depth]
+	this->FindPossibleTurnRecursive(pos, pos, Vector<short>(), false,[this, start, end, border_Copy, current_checker, cgu,
+		whiteBlack, depth, current_depth, prev_checker]
 	(Vector<short> Check_Pos, Vector<short> Check_Pos2)->bool
 		{
 			if (Check_Pos != Check_Pos2)//Stop recurtion step when we have found multi-kill
@@ -1343,7 +1356,7 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 
 			cgu->SetCursorPosition(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
 
-			edge<Vector<ushort>> e = edge<Vector<ushort>>(checker->GetPosition(), Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
+			edge<Vector<ushort>> e = edge<Vector<ushort>>(prev_checker->GetPosition(), Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
 
 			Move(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
 
@@ -1355,7 +1368,7 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 
 			for (size_t i = start; i < end; i++)
 			{
-				BuildGameTreeRecursive(border_Copy + i, !whiteBlack, depth, current_depth+1, border_Copy);
+				BuildGameTreeRecursive(border_Copy + i, current_checker, !whiteBlack, depth, current_depth + 1, border_Copy);
 			}
 
 			return false;//Don't stop recurtion

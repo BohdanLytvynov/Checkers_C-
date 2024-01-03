@@ -381,7 +381,7 @@ namespace game_engine_core
 			void SelectPossibleMove(bool whiteBlack, size_t depth, 
 				size_t current_depth);
 
-			void BuildGameTreeRecursive(Checker* checker, bool whiteBlack,
+			void BuildGameTreeRecursive(Checker* current_checker, Checker* prev_checker, bool whiteBlack,
 				size_t depth, size_t current_depth, Checker* board_copy = nullptr);
 
 			void Move(Vector<ushort> selPosition);

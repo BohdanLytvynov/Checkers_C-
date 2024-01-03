@@ -481,14 +481,14 @@ namespace linear_data_structures
 
 #pragma region Operators
 
-		bool operator == (const key_value_pair& other)
+		bool operator == (const key_value_pair& other) const
 		{
 			return other.m_key == this->m_key;
 		}
 
-		bool operator != (const key_value_pair& other)
+		bool operator != (const key_value_pair& other) const
 		{
-			return !(this == other);
+			return other.m_key != this->m_key;
 		}
 
 #pragma endregion
@@ -585,6 +585,23 @@ namespace linear_data_structures
 			prev->GetNextPtr() = temp->GetNextPtr();
 			delete temp;
 			--m_count;
+		}
+
+		virtual Node<T>* GetNode(T value)
+		{
+			Node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (temp->GetData() == value)
+				{
+					return temp;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+
+			return nullptr;
 		}
 
 		// Destructor to deallocate memory
@@ -784,7 +801,7 @@ namespace nonlinear_data_structures
 			m_verteces = new linear_data_structures::single_linked_list<Tkey>();
 		}
 
-		~edge_list_graph()
+		virtual ~edge_list_graph()
 		{
 			m_graph->Clear();
 
@@ -795,7 +812,7 @@ namespace nonlinear_data_structures
 			delete m_verteces;
 		}
 
-		void AddEdge(const edge<Tkey>& edge)
+		virtual void AddEdge(const edge<Tkey>& edge)
 		{
 			if (!m_verteces->Contains(edge.GetFrom()))
 			{
@@ -805,7 +822,7 @@ namespace nonlinear_data_structures
 			m_graph->AddToTheEnd(edge);			
 		}
 
-		void RemoveEdge(const edge<Tkey>& edge)
+		virtual void RemoveEdge(const edge<Tkey>& edge)
 		{
 			m_graph->Delete(edge);			
 		}
@@ -881,6 +898,52 @@ namespace nonlinear_data_structures
 
 		linear_data_structures::single_linked_list<Tkey>* m_verteces;		
 	};
+
+	template<typename Tkey, typename Tdata>
+	struct edge_list_graph_with_data : public edge_list_graph<Tkey>
+	{
+#pragma region Ctor
+
+		edge_list_graph_with_data() : edge_list_graph<Tkey>() 
+		{
+			m_vertex_data = new linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Tkey, Tdata>>();
+		}
+	
+#pragma endregion
+
+#pragma region Destructor
+
+		~edge_list_graph_with_data() override
+		{
+			edge_list_graph<Tkey>::~edge_list_graph();
+
+			m_vertex_data->Clear();
+
+			delete m_vertex_data;
+		}
+
+#pragma endregion
+
+#pragma region Functions
+
+		void AddData(Tkey key, Tdata data)
+		{
+			linear_data_structures::key_value_pair<Tkey, Tdata> pair = 
+				linear_data_structures::key_value_pair<Tkey, Tdata>(key, data);
+
+			if (!m_vertex_data->Contains(key))
+			{
+				m_vertex_data->AddToTheEnd(pair);
+			}			
+		}
+
+#pragma endregion
+
+
+	private:
+		linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Tkey, Tdata>>* m_vertex_data;
+	};
+
 }
 
 #endif // !DATASTRUCTURES_H
