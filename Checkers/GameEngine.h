@@ -7,7 +7,6 @@ typedef unsigned short ushort;
 #include"v_math.h"
 #include"Console_graphics.h"
 #include"DataStructures.h"
-#include<map>
 
 namespace game_engine_core
 {	
@@ -306,8 +305,9 @@ namespace game_engine_core
 
 		Vector<short> FindOrthogonalVector(const Vector<short>& v) const;
 
-		void FindAllPosibleTurnsForKingRecursive(const Vector<short>& position,
-			Vector<short>& prevPosition, bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
+		void FindAllPosibleTurnsForKingRecursive(Checker* selectedChecker, const Vector<short>& position,
+			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
+			bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
 			bool checker_under_attack = false);
 
 		void FindPossibleTurns(std::function<bool(Vector<short> position, Vector<short> PrevPos)> func = nullptr);
@@ -318,14 +318,22 @@ namespace game_engine_core
 
 		Cell* FindCellUsingPosition(const Vector<short>& positionVector);
 
-		Checker* FindCheckerUsingPosition(const Vector<short>& positionVector);//??
+		Checker* FindCheckerUsingPosition(const Vector<short>& positionVector, Checker* checkers,
+			size_t checkers_count);//??
 
-		void FindPossibleTurnRecursive(const Vector<short>& position, 
-			Vector<short>& prevPosition, const Vector<short>& dirVector = Vector<short>(),
-			bool multiKill = false, std::function<bool(Vector<short> position, Vector<short> PrevPos)> func = nullptr);
+		void FindPossibleTurnRecursive(Checker* selectedChecker, const Vector<short>& position, 
+			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
+			const Vector<short>& dirVector = Vector<short>(),
+			bool multiKill = false, std::function<bool(Vector<short> position, 
+				Vector<short> PrevPos)> func = nullptr);
+
+		void DrawBoard(Cell** board, size_t rows_count, size_t colums_count);
+
+		void DrawCheckers(Checker* checkers, size_t checkers_count);
 
 #pragma region Checker Board
-
+			
+	protected:
 		ushort m_boardWidth;
 
 		ushort m_boardHeight;
@@ -382,7 +390,7 @@ namespace game_engine_core
 				size_t current_depth);
 
 			void BuildGameTreeRecursive(Checker* current_checker, Checker* prev_checker, bool whiteBlack,
-				size_t depth, size_t current_depth, Checker* board_copy = nullptr);
+				size_t depth, size_t current_depth, Checker* board_copy, size_t checkers_count);
 
 			void Move(Vector<ushort> selPosition);
 
@@ -432,11 +440,7 @@ namespace game_engine_core
 		ai_modules::checker_ai* m_ai;
 
 		bool m_use_AI;
-		
-		void DrawBoard();
-
-		void DrawCheckers();
-
+				
 		GameController(console_graphics_utility *console_graphics_utility,
 			Vector<ushort> BoardPosiion, CellBuildingOptions* cellbuildingOptions,
 			CheckerBuildingOptions* checkerBuildingOptions, 
