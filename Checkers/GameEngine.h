@@ -7,6 +7,7 @@ typedef unsigned short ushort;
 #include"v_math.h"
 #include"Console_graphics.h"
 #include"DataStructures.h"
+#include<map>
 
 namespace game_engine_core
 {	
@@ -18,8 +19,8 @@ namespace game_engine_core
 		GameObject();
 
 		GameObject(const ushort& width, const ushort& height, const WORD& backGround,	
-			const WORD& selColor, 
-			vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
+			const WORD& focusColor, 
+			Vector<ushort> position, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		virtual ~GameObject();
 		
@@ -37,15 +38,15 @@ namespace game_engine_core
 
 		WORD GetBackColor() const;
 		
-		vector<ushort> GetPosition() const;
+		Vector<ushort> GetPosition() const;
 
 		char* GetChars() const;
 
 		size_t GetCharsToDrawSize() const;
 		
-		virtual bool isSelected() const;
+		virtual bool isFocused() const;
 
-		WORD GetSelectionColor() const;
+		WORD GetFocusColor() const;
 			
 #pragma endregion
 
@@ -59,35 +60,35 @@ namespace game_engine_core
 
 		void SetBackColor(const WORD &backColor);
 		
-		void SetPosition(const vector<ushort> &v);
+		void SetPosition(const Vector<ushort> &v);
 		
 		void SetCharsToDrawSize(size_t size);
 
-		virtual void Select();
+		virtual void Focus();
 
-		virtual void Deselct();
+		virtual void UnFocus();
 
-		void SetSelectionColor(WORD selColor);
+		void SetFocusColor(WORD selColor);
 
 #pragma endregion
 
 	private:
 
-		char* m_chars;
+		char* m_chars;//Контролює з яких символіів буде відмальована шашка (Покажчик)
 
-		size_t m_charsToDrawSize;
+		size_t m_charsToDrawSize;//Контролює розмір динам массиву чар
 
-		WORD m_backGround;
+		WORD m_backGround;//Колір бєкграунд
 
-		WORD m_selectionColor;
+		WORD m_focusColor;//Колір фокусування обєкта
 		
-		vector<ushort> m_position;
+		Vector<ushort> m_position;//Радіус вектор обєкта
 
-		ushort m_width;
+		ushort m_width;//Ширина
 
-		ushort m_height;
+		ushort m_height;//Висота
 
-		bool m_selected;			
+		bool m_focused;//Сфокусовано чи ні		
 	};
 	
 	struct Killable : public GameObject
@@ -96,7 +97,7 @@ namespace game_engine_core
 
 		Killable(const ushort& width, const ushort& height, const WORD& backGround,	
 			const WORD& selColor,
-			vector<ushort> position, char* charsToDraw, size_t charsToDrawSize);
+			Vector<ushort> position, char* charsToDraw, size_t charsToDrawSize);
 
 		Killable(const Killable& other);		
 
@@ -122,22 +123,23 @@ namespace game_engine_core
 
 	struct IBorderHighLightable
 	{
-		virtual const WORD& GetBorderSelectionColor() const = 0;
+		virtual const WORD& GetBorderHighlightColor() const = 0;
 
-		virtual void SetBorderSelectionColor(const WORD& borderSelColor) = 0;
+		virtual void SetBorderHighlightColor(const WORD& borderSelColor) = 0;
 
 		virtual void HighlightBorder() = 0;
 
 		virtual void UnHighLightBorder() = 0;
 	};
-
-	struct Cell : public GameObject, public IObjectWithBorder, public IBorderHighLightable
+	
+	struct Cell : public GameObject, public IObjectWithBorder, 
+		public IBorderHighLightable
 	{
 		Cell();
 
 		Cell(const ushort& width, const ushort& height, const WORD& backGround,
-			const WORD& border, const WORD& selColor, const WORD& bordeHighlightColor,
-			vector<ushort> position, bool isWhite, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
+			const WORD& border, const WORD& focusColor, const WORD& bordeHighlightColor,			
+			Vector<ushort> position, bool isWhite, char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		void Render(console_graphics_utility& utility) override;
 
@@ -146,6 +148,12 @@ namespace game_engine_core
 		Cell& operator = (const Cell& other);
 
 		bool IsWhite() const;
+
+		bool IsMoveSelected() const;
+
+		void SelectMove();
+
+		void DeSelectMove();
 
 #pragma region IObject with border Interface
 
@@ -157,16 +165,15 @@ namespace game_engine_core
 
 #pragma region IBorder Highlightable Interface
 
-		const WORD& GetBorderSelectionColor() const override;
+		const WORD& GetBorderHighlightColor() const override;
 
-		void SetBorderSelectionColor(const WORD& borderSelColor) override;
+		void SetBorderHighlightColor(const WORD& borderSelColor) override;
 
 		void HighlightBorder() override;
 
 		void UnHighLightBorder() override;
 
 #pragma endregion
-
 
 	private:
 		bool m_isWhite;
@@ -176,6 +183,8 @@ namespace game_engine_core
 		WORD m_BorderHighlightColor;
 
 		bool m_borderHighLight;
+
+		bool m_Move_Selected;
 	};
 	
 	struct Checker : public Killable
@@ -183,7 +192,7 @@ namespace game_engine_core
 		Checker();
 
 		Checker(const ushort& width, const ushort& height, const WORD& backGround, const WORD& selColor,			
-			vector<ushort> position, bool isWhite, ushort HorBaseLength = 2, ushort VertBaseLength = 2,
+			Vector<ushort> position, bool isWhite, ushort HorBaseLength = 2, ushort VertBaseLength = 2,
 			char* charsToDraw = nullptr, size_t charsToDrawSize = 0);
 
 		Checker(const Checker& other);
@@ -214,7 +223,7 @@ namespace game_engine_core
 
 		CellBuildingOptions(WORD BlackColor,
 			WORD WhiteColor, WORD borderColor, 
-			WORD borderHighLightColor, WORD SelColor,
+			WORD borderHighLightColor, WORD FocusColor, WORD sel_BorderColor,
 			ushort cellWidth = 10, ushort cellHeight = 6);
 
 		const ushort& GetCellWidth() const;
@@ -229,9 +238,11 @@ namespace game_engine_core
 
 		void SetBorderColor(const WORD& borderColor) override;
 
-		const WORD& GetSelectionColor() const;
+		const WORD& GetFocusColor() const;
 
 		const WORD& GetBorderHighlightColor() const;
+
+		const WORD& GetMoveSelectColor() const;
 
 	private:
 
@@ -245,9 +256,11 @@ namespace game_engine_core
 
 		WORD m_borderColor;
 
-		WORD m_SelectionColor;
+		WORD m_FocusColor;
 
 		WORD m_BorderHighlightColor;
+
+		WORD m_MoveSelectColor;
 	};
 
 	struct CheckerBuildingOptions
@@ -280,16 +293,117 @@ namespace game_engine_core
 		ushort m_CheckerHeight;
 
 	};
+	
+	struct Main_Game_logic
+	{	
+#pragma region Ctor
 
-	struct GameController
+		Main_Game_logic(console_graphics_utility* cgu);
+
+		Main_Game_logic() {}
+
+#pragma endregion
+
+		Vector<short> FindOrthogonalVector(const Vector<short>& v) const;
+
+		void FindAllPosibleTurnsForKingRecursive(const Vector<short>& position,
+			Vector<short>& prevPosition, bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
+			bool checker_under_attack = false);
+
+		void FindPossibleTurns(std::function<bool(Vector<short> position, Vector<short> PrevPos)> func = nullptr);
+
+		bool OutOfBorders(const Vector<short>& position);
+
+		bool IsAllPossibleTurnsSelected();
+
+		Cell* FindCellUsingPosition(const Vector<short>& positionVector);
+
+		Checker* FindCheckerUsingPosition(const Vector<short>& positionVector);//??
+
+		void FindPossibleTurnRecursive(const Vector<short>& position, 
+			Vector<short>& prevPosition, const Vector<short>& dirVector = Vector<short>(),
+			bool multiKill = false, std::function<bool(Vector<short> position, Vector<short> PrevPos)> func = nullptr);
+
+#pragma region Checker Board
+
+		ushort m_boardWidth;
+
+		ushort m_boardHeight;
+
+		static Vector<short> m_dirVectors[4];
+
+		static Vector<short> m_boardBasis[2];
+
+		Vector<ushort> m_Board_position;
+		
+		Checker* m_checkers;//Array that contains all of the checkers BLACK one at the start of the array,
+		//White one from the middle to the end.
+
+		Checker* m_selectedChecker;
+
+		const size_t m_checkersCount = 24;
+
+		Cell** m_board;
+
+		console_graphics_utility* m_console_graphics_utility;
+
+#pragma endregion
+		
+#pragma region Calculations of Turns
+
+		static signed char m_multipleTakes;
+
+#pragma endregion
+
+#pragma region Additional Collections
+
+		linear_data_structures::single_linked_list<Checker*> m_checkersToBeKilled;
+
+		linear_data_structures::single_linked_list<Cell*> m_possibleTurns;
+
+		linear_data_structures::single_linked_list<Cell*> m_selectedRouts;
+
+#pragma endregion		
+	};
+
+	namespace ai_modules
 	{
-	public:		
-				
+		struct checker_ai : public Main_Game_logic
+		{		
+
+			checker_ai(console_graphics_utility* cgu);
+
+#pragma region Init
+			void Initialize_AI_Variables(ushort board_Width, ushort board_Height,
+				Vector<ushort> board_Position, Checker* checkers, Cell** board,
+				ushort Cell_height);
+#pragma endregion
+			void SelectPossibleMove(bool whiteBlack, size_t depth, 
+				size_t current_depth);
+
+			void BuildGameTreeRecursive(Checker* current_checker, Checker* prev_checker, bool whiteBlack,
+				size_t depth, size_t current_depth, Checker* board_copy = nullptr);
+
+			void Move(Vector<ushort> selPosition);
+
+			int FindEuristicValue(Checker* board);
+
+		private:
+			//bool who_is_AI;//true - white false - black//May be we use it later now Black Player is AI
+
+			nonlinear_data_structures::edge_list_graph<Vector<ushort>> m_game_tree;
+
+			linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Vector<short>, int>> m_eur_ValueTable;
+
+			ushort m_Cell_Height;
+		};
+	}
+			
+	struct GameController : public Main_Game_logic
+	{
 		void SelectChecker(bool whiteBlack, std::function<void()> PrintFunc = nullptr, 
 			std::function<void()> PrintConfirmFunc = nullptr);
-				
-		void FindPossibleTurns();
-
+						
 		void HighLightPossibleTurns();
 
 		void SelectMove(std::function<void()> PrintFunc = nullptr,
@@ -305,76 +419,40 @@ namespace game_engine_core
 		bool IsGameOver(bool &winner);
 
 		static GameController* Initialize(console_graphics_utility* console_graphics_utility, 
-			vector<ushort> controllerPosition, CellBuildingOptions* cellbuildingOptions,
-			CheckerBuildingOptions *checkerBuildingOptions);
+			Vector<ushort> controllerPosition, CellBuildingOptions* cellbuildingOptions,
+			CheckerBuildingOptions *checkerBuildingOptions, 
+			ai_modules::checker_ai* ai_module = nullptr);
 
 		GameController(const GameController&) = delete;
 
 		GameController& operator = (const GameController&) = delete;
 
 	private:
+				
+		ai_modules::checker_ai* m_ai;
+
+		bool m_use_AI;
 		
-		bool OutOfBorders(const vector<short> &position);
-
-		bool IsAllPossibleTurnsSelected();		
-
-		Cell* FindCellUsingPosition(const vector<short>& positionVector);
-
-		Checker* FindCheckerUsingPosition(const vector<short>& positionVector);//??
-
-		void FindPossibleTurnRecursive(const vector<short> &position, vector<short>& prevPosition, const vector<short>& dirVector = vector<short>(), bool multiKill = false);
-
 		void DrawBoard();
 
 		void DrawCheckers();
 
 		GameController(console_graphics_utility *console_graphics_utility,
-			vector<ushort> BoardPosiion, CellBuildingOptions* cellbuildingOptions,
-			CheckerBuildingOptions* checkerBuildingOptions);
+			Vector<ushort> BoardPosiion, CellBuildingOptions* cellbuildingOptions,
+			CheckerBuildingOptions* checkerBuildingOptions, 
+			ai_modules::checker_ai* ai_module = nullptr);
 
 		~GameController();
-		
-		ushort m_boardWidth;
-
-		ushort m_boardHeight;
-
-		linear_data_structures::single_linked_list<Checker*> m_checkersToBeKilled;
-
-		linear_data_structures::single_linked_list<Cell*> m_possibleTurns;
-
-		linear_data_structures::single_linked_list<Cell*> m_selectedRouts;
-
-		console_graphics_utility* m_console_graphics_utility;
-
+								
 		char* m_controls;
-
-		Cell** m_board;
-
-		Checker* m_checkers;//Array that contains all of the checkers BLACK one at the start of the array,
-		//White one from the middle to the end.
-
-		Checker* m_selectedChecker;
-
-		const size_t m_checkersCount = 24;
-
+		
 		static bool m_init;
-
-		static signed char m_multipleMoves;		
-
-		static vector<short> m_dirVectors [4];
-
-		static vector<short> m_boardBasis[2];
-
-		vector<ushort> m_Board_position;
-
+						
 		CellBuildingOptions* m_cellBuildingOptions;
 
 		CheckerBuildingOptions* m_checkerBuildingOpions;
-
 	};	
 }
-
-
 
 #endif // !GAMEENGINE_H
 

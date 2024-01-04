@@ -11,7 +11,7 @@
 namespace vector_math
 {
 	Tdecl
-	class vector;
+	class Vector;
 
 #pragma region Point declaretion
 
@@ -39,9 +39,9 @@ namespace vector_math
 			return *this;
 		}
 
-		vector<T> operator - (point<T>& start) const
+		Vector<T> operator - (point<T>& start) const
 		{
-			return vector<T>(start, *this);
+			return Vector<T>(start, *this);
 		}
 
 #pragma endregion
@@ -53,7 +53,7 @@ namespace vector_math
 #pragma region Vector Declaretion
 	
 	Tdecl
-		class vector : public ConsoleCoords<T>
+		class Vector : public ConsoleCoords<T>
 	{
 	private:
 		void ReCalcVectorCoords(const point<T>& start, const point<T>& end)
@@ -67,14 +67,14 @@ namespace vector_math
 		/// <summary>
 		/// Empty standart ctor
 		/// </summary>
-		vector<T>() : ConsoleCoords<T>() {}
+		Vector<T>() : ConsoleCoords<T>() {}
 
 		/// <summary>
 		/// Main ctor
 		/// </summary>
 		/// <param name="start">Start Point</param>
 		/// <param name="end">End Point</param>
-		vector<T>(const point<T>& start, const point<T>& end)
+		Vector<T>(const point<T>& start, const point<T>& end)
 		{
 			ReCalcVectorCoords(start, end);
 		}
@@ -83,9 +83,9 @@ namespace vector_math
 		/// Copy Ctor
 		/// </summary>
 		/// <param name="other">ref to Object source</param>
-		vector<T>(const vector<T>& other) : ConsoleCoords<T>(other) {}
+		Vector<T>(const Vector<T>& other) : ConsoleCoords<T>(other) {}
 
-		vector<T>(const T x, const T y)
+		Vector<T>(const T x, const T y)
 		{
 			ConsoleCoords<T>::SetXY(x, y);
 		}
@@ -96,17 +96,38 @@ namespace vector_math
 
 #pragma region Logical Functions
 
-		bool Equals(const vector<T> other) const
+		bool Equals(const Vector<T> &other) const
 		{
 			return this->operator==(other);
 		}
 
-#pragma endregion
+		bool IsColinear(const Vector<T>& other) const
+		{
+			return (this->GetX() * other.GetY() - other.GetX() * this->GetY()) == 0;
+		}
 
+		bool IsCoDirectional(const Vector<T>& other)
+		{
+			if (IsColinear(other))
+			{
+				//Determine wether vectors are codirectional
+
+				return this->DotProduct(other) > 0;
+			}
+
+			return false;
+		}
+
+#pragma endregion
 
 #pragma region Logical Operators
 
-		bool operator == (const vector<T>& other) const
+		bool operator || (const Vector<T> &other) const
+		{
+			return IsColinear(other);
+		}
+
+		bool operator == (const Vector<T>& other) const
 		{
 			if (this->GetLength() == other.GetLength())
 				return this->GetX() == other.GetX() && this->GetY() == other.GetY();
@@ -114,13 +135,13 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator != (const vector<T>& other) const
+		bool operator != (const Vector<T>& other) const
 		{
 			return !((*this) == other);
 		}
 
 		
-		bool operator < (const vector<T>& other) const
+		bool operator < (const Vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() < other.GetLength();
@@ -128,7 +149,7 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator > (const vector<T>& other) const
+		bool operator > (const Vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() > other.GetLength();
@@ -136,7 +157,7 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator >= (const vector<T>& other) const
+		bool operator >= (const Vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() >= other.GetLength();
@@ -144,7 +165,7 @@ namespace vector_math
 			return false;
 		}
 
-		bool operator <= (const vector<T>& other) const
+		bool operator <= (const Vector<T>& other) const
 		{
 			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
 				return this->GetLength() <= other.GetLength();
@@ -156,43 +177,48 @@ namespace vector_math
 
 #pragma region Math operators
 
-		vector<T> operator + (const vector<T>& vector) const
+		Vector<T> operator + (const Vector<T>& vector) const
 		{
-			return vector_math::vector<T>(this->GetX() + vector.GetX(), this->GetY() + vector.GetY());
+			return vector_math::Vector<T>(this->GetX() + vector.GetX(), this->GetY() + vector.GetY());
 		}
 
-		vector<T>& operator += (const vector<T>& vector)
+		Vector<T>& operator += (const Vector<T>& vector)
 		{
 			this->SetXY(this->GetX() + vector.GetX(), this->GetY() + vector.GetY());
 
 			return *this;
 		}
 
-		vector<T> operator - (const vector<T>& vector) const
+		Vector<T> operator - (const Vector<T>& vector) const
 		{
-			return vector_math::vector<T>(this->GetX() - vector.GetX(), this->GetY() - vector.GetY());
+			return vector_math::Vector<T>(this->GetX() - vector.GetX(), this->GetY() - vector.GetY());
 		}
 
-		vector<T>& operator -= (const vector<T> vector)
+		Vector<T> operator -()
+		{
+			return Invert();
+		}
+
+		Vector<T>& operator -= (const Vector<T> vector)
 		{
 			this->SetXY(this->GetX() - vector.GetX(), this->GetY() - vector.GetY());
 
 			return *this;
 		}
 
-		vector<T> operator * (const T number) const
+		Vector<T> operator * (const T number) const
 		{
-			return vector<T>(this->GetX() * number, this->GetY() * number);
+			return Vector<T>(this->GetX() * number, this->GetY() * number);
 		}
 
-		vector<T>& operator *= (const T number)
+		Vector<T>& operator *= (const T number)
 		{
 			this->SetXY(this->GetX() * number, this->GetY() * number);
 
 			return *this;
 		}
 
-		T operator * (const vector<T>& other) const
+		T operator * (const Vector<T>& other) const
 		{
 			return this->DotProduct(other);
 		}
@@ -202,14 +228,14 @@ namespace vector_math
 			return this->GetLength();
 		}
 
-		vector<T>& operator = (const vector<T>& other)
+		Vector<T>& operator = (const Vector<T>& other)
 		{
 			ConsoleCoords<T>::SetXY(other.GetX(), other.GetY());
 
 			return *this;
 		}
 
-		vector<T> operator * (T multiplyers[2])
+		Vector<T> operator * (T multiplyers[2])
 		{
 			return this->MultiplyXYSeparetly(multiplyers);
 		}
@@ -218,26 +244,31 @@ namespace vector_math
 
 #pragma region Math functions
 
+		Vector<T> Invert() 
+		{
+			return this->operator* -1;
+		}
+
 		double GetLength() const
 		{
 			return static_cast<double>(sqrtf(this->GetX() * this->GetX() + this->GetY() * this->GetY()));
 		}
 
-		T DotProduct(const vector<T>& vector) const
+		T DotProduct(const Vector<T>& vector) const
 		{
 			return vector.GetX() * this->GetX() + vector.GetY() * this->GetY();
 		}
 
-		vector<T> Normalize()
+		Vector<T> Normalize()
 		{
 			T length = this->GetLength() > 1 ? this->GetLength() : 1;
 
-			return (*this) * length;
+			return this->operator * (1/length);
 		}
 
-		vector<T> MultiplyXYSeparetly(T multiplyers[2])
+		Vector<T> MultiplyXYSeparetly(T multiplyers[2])
 		{
-			return vector<T>(this->GetX() * multiplyers[0], this->GetY() * multiplyers[1]);
+			return Vector<T>(this->GetX() * multiplyers[0], this->GetY() * multiplyers[1]);
 		}
 
 
@@ -309,11 +340,11 @@ namespace vector_math
 
 #pragma region Converter
 		template<class Tout>
-		vector<Tout> Convert_To(value_convertion::IConverter<T, Tout> &converter) const
+		Vector<Tout> Convert_To(value_convertion::IConverter<T, Tout> &converter) const
 		{
 			value_convertion::IConverter<T, Tout>* ptr = &converter;
 
-			return vector<Tout>(ptr->ConvertTo(ConsoleCoords<T>::GetX()), 
+			return Vector<Tout>(ptr->ConvertTo(ConsoleCoords<T>::GetX()), 
 				ptr->ConvertTo(ConsoleCoords<T>::GetY()));
 		}
 		
