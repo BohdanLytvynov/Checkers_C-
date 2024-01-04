@@ -1903,7 +1903,7 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 
 void game_engine_core::GameController::Draw()
 {
-	this->DrawBoard(m_board, 8,  8);
+	this->DrawBoard(m_board, 8, 8);
 
 	this->DrawCheckers(m_checkers, m_checkersCount);
 }
