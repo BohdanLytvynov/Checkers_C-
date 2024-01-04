@@ -651,21 +651,20 @@ game_engine_core::Cell* game_engine_core::Main_Game_logic::FindCellUsingPosition
 	return nullptr;
 }
 
-game_engine_core::Checker* game_engine_core::Main_Game_logic::FindCheckerUsingPosition(const Vector<short>& positionVector)
+game_engine_core::Checker* game_engine_core::Main_Game_logic::FindCheckerUsingPosition(
+	const Vector<short>& positionVector, Checker* checkers,
+	size_t checkers_count)
 {
-	Vector<short> shortvector;
+	if (checkers == nullptr)
+		return nullptr;
 
-	for (size_t i = 0; i < m_checkersCount; i++)
+	if (checkers_count == 0)
+		return nullptr;
+
+	for (size_t i = 0; i < checkers_count; i++)
 	{
-		if (m_checkers + i == nullptr)
-			break;
-
-		shortvector = (m_checkers + i)->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
-
-		if (shortvector == positionVector)
-			return (m_checkers + i);
-
-		int a;
+		if ((checkers + i)->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT) == positionVector)
+			return (checkers + i);
 	}
 
 	return nullptr;
@@ -741,8 +740,11 @@ vector_math::Vector<short> game_engine_core::Main_Game_logic::FindOrthogonalVect
 	return result;
 }
 
-void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(const Vector<short>& position,
-	Vector<short>& prevPosition, bool& on_Callback, const Vector<short>& dirVector,
+void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(
+	Checker* selectedChecker,
+	const Vector<short>& position,
+	Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
+	bool& on_Callback, const Vector<short>& dirVector,
 	bool checker_under_attack)
 {
 	//Base Case
@@ -768,13 +770,14 @@ void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(cons
 		for (size_t i = 0; i < count; i++)
 		{
 			//Examine all directions but only if we are at he same cell position as our King is.
-			FindAllPosibleTurnsForKingRecursive(position + m_dirVectors[i], prevPosition, on_Callback, m_dirVectors[i]);
+			FindAllPosibleTurnsForKingRecursive(selectedChecker, position + m_dirVectors[i], prevPosition,
+				checkers, checkers_count, on_Callback, m_dirVectors[i]);
 		}
 	}
 	else
 	{
 		//determine wether next cell is empty
-		auto enemyChecker = FindCheckerUsingPosition(position);
+		auto enemyChecker = FindCheckerUsingPosition(position, checkers, checkers_count);
 
 		if (enemyChecker == nullptr)
 		{
@@ -784,18 +787,20 @@ void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(cons
 			{
 				m_possibleTurns.AddToTheEnd(Cell);
 				//next cell is empty make another move.
-				FindAllPosibleTurnsForKingRecursive(position + dirVector, prevPosition, on_Callback, dirVector, checker_under_attack);
+				FindAllPosibleTurnsForKingRecursive(selectedChecker, position + dirVector, prevPosition,
+					checkers, checkers_count,
+					on_Callback, dirVector, checker_under_attack);
 			}
 
 			if (on_Callback)
 			{
 				//m_console_graphics_utility->SetCursorPosition(position.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
 
-				Checker* ch = FindCheckerUsingPosition(position + (dirVector * -1));
+				Checker* ch = FindCheckerUsingPosition(position + (dirVector * -1), checkers, checkers_count);
 
 				if (ch != nullptr)
 				{
-					if (ch->IsCheckerWhite() != m_selectedChecker->IsCheckerWhite())
+					if (ch->IsCheckerWhite() != selectedChecker->IsCheckerWhite())
 					{
 					}
 					else
@@ -818,7 +823,7 @@ void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(cons
 		}
 		else //Next cell is not empty maybe there can be enemy checker
 		{
-			bool nextIsFriend = m_selectedChecker->IsCheckerWhite() == enemyChecker->IsCheckerWhite();
+			bool nextIsFriend = selectedChecker->IsCheckerWhite() == enemyChecker->IsCheckerWhite();
 
 			if (nextIsFriend)//It is the checker who's color is the same with the King
 			{
@@ -847,7 +852,7 @@ void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(cons
 					return;
 				}
 
-				auto Checker_Behind = FindCheckerUsingPosition(positionBehind_theEnemyChecker);
+				auto Checker_Behind = FindCheckerUsingPosition(positionBehind_theEnemyChecker, checkers, checkers_count);
 
 				if (Checker_Behind == nullptr)//Enemy checker is open -> Attack it
 				{
@@ -875,16 +880,18 @@ void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(cons
 					bool CallBack = false;
 
 					//Expend Search in orthogonal direction to find the new possible targets
-					FindAllPosibleTurnsForKingRecursive(v1, v1, CallBack, orthogonal, true);
+					FindAllPosibleTurnsForKingRecursive(selectedChecker, v1, v1, checkers, checkers_count, CallBack, orthogonal, true);
 					//Expend Search in orthogonal opposite direction to find the new possible targets
 
 					CallBack = false;
 
-					FindAllPosibleTurnsForKingRecursive(v2, v2, CallBack, orthogonal * -1, true);
+					FindAllPosibleTurnsForKingRecursive(selectedChecker, v2, v2, checkers, checkers_count, CallBack, orthogonal * -1, true);
 
 					CallBack = false;
 
-					FindAllPosibleTurnsForKingRecursive(positionBehind_theEnemyChecker, positionBehind_theEnemyChecker, CallBack, dirVector, true);
+					FindAllPosibleTurnsForKingRecursive(selectedChecker, positionBehind_theEnemyChecker,
+						positionBehind_theEnemyChecker, checkers, checkers_count,
+						CallBack, dirVector, true);
 				}
 				else
 				{
@@ -903,9 +910,30 @@ void game_engine_core::Main_Game_logic::FindAllPosibleTurnsForKingRecursive(cons
 	}
 }
 
+void game_engine_core::Main_Game_logic::DrawBoard(Cell** board, size_t rows_count, size_t colums_count)
+{
+	for (size_t i = 0; i < rows_count; i++)
+	{
+		for (size_t j = 0; j < colums_count; j++)
+		{
+			(board[i] + j)->Render(*m_console_graphics_utility);
+		}
+	}
+}
+
+void game_engine_core::Main_Game_logic::DrawCheckers(Checker* checkers, size_t checkers_count)
+{
+	for (size_t i = 0; i < checkers_count; i++)
+	{
+		(checkers + i)->Render(*m_console_graphics_utility);
+	}
+}
+
 void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
+	Checker* selectedChecker,
 	const Vector<short>& position,
-	Vector<short>& startPosition, const Vector<short>& dirVector, bool multiKill,
+	Vector<short>& startPosition, Checker* checkers, size_t checkers_count,
+	const Vector<short>& dirVector, bool multiKill,
 	std::function<bool(Vector<short> position, Vector<short> PrevPos)> func)
 {
 	m_console_graphics_utility->SetCursorPosition(position.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
@@ -918,11 +946,11 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 			return;
 		}
 
-		Checker* currentchecker = FindCheckerUsingPosition(position);
+		Checker* currentchecker = FindCheckerUsingPosition(position, checkers, checkers_count);
 
 		if (currentchecker == nullptr && !multiKill)//Position of the empty cell (No checkers exists at this posVector)
 		{
-			if (m_selectedChecker->IsCheckerWhite() && ((dirVector * m_boardBasis[1]) < 0))//Move of the white checker
+			if (selectedChecker->IsCheckerWhite() && ((dirVector * m_boardBasis[1]) < 0))//Move of the white checker
 			{
 				if (func != nullptr)
 				{
@@ -935,7 +963,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 
 				return;
 			}
-			else if (!m_selectedChecker->IsCheckerWhite() && (dirVector * m_boardBasis[1]) > 0)//Move for the black checker
+			else if (!selectedChecker->IsCheckerWhite() && (dirVector * m_boardBasis[1]) > 0)//Move for the black checker
 			{
 				if (func != nullptr)
 				{
@@ -955,12 +983,12 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 		}
 		else if (currentchecker != nullptr)
 		{
-			if (m_selectedChecker->IsCheckerWhite() != currentchecker->IsCheckerWhite()) //Cell contains checker, also case when checkers can fight
+			if (selectedChecker->IsCheckerWhite() != currentchecker->IsCheckerWhite()) //Cell contains checker, also case when checkers can fight
 			{
 				//Fighting We can attack only if the cell behind the checker is empty
 				//and the checker can't be attacked twice
 
-				if (m_checkersToBeKilled.Contains(FindCheckerUsingPosition(position)))
+				if (m_checkersToBeKilled.Contains(FindCheckerUsingPosition(position, checkers, checkers_count)))
 				{
 					return;
 				}
@@ -969,7 +997,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 
 				m_console_graphics_utility->SetCursorPosition(posBehind.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
 
-				if (FindCheckerUsingPosition(posBehind) == nullptr)//Enemy checker is open
+				if (FindCheckerUsingPosition(posBehind, checkers, checkers_count) == nullptr)//Enemy checker is open
 				{
 					if (OutOfBorders(posBehind))
 					{
@@ -977,26 +1005,24 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 					}
 
 					m_multipleTakes++;
+					
+					m_possibleTurns.AddToTheEnd(FindCellUsingPosition(posBehind));
+
+					m_checkersToBeKilled.AddToTheEnd(FindCheckerUsingPosition(position, checkers, checkers_count));
 
 					if (func != nullptr)
 					{
-						if (func(posBehind, position)) { return; };
-					}
-					else
-					{
-						m_possibleTurns.AddToTheEnd(FindCellUsingPosition(posBehind));
-
-						m_checkersToBeKilled.AddToTheEnd(FindCheckerUsingPosition(position));
+						if (func(posBehind, position)) { return; }//Stop recurtion when we are building game tree
 					}
 
 					//Posibility of multiKill
 
 					bool multiKill = true;
 
-					FindPossibleTurnRecursive(posBehind + m_dirVectors[0], posBehind, m_dirVectors[0], multiKill, func);//Move leftUp
-					FindPossibleTurnRecursive(posBehind + m_dirVectors[1], posBehind, m_dirVectors[1], multiKill, func);//Move rightUp
-					FindPossibleTurnRecursive(posBehind + m_dirVectors[2], posBehind, m_dirVectors[2], multiKill, func);//Move leftDown
-					FindPossibleTurnRecursive(posBehind + m_dirVectors[3], posBehind, m_dirVectors[3], multiKill, func);//Move rightDown
+					FindPossibleTurnRecursive(selectedChecker, posBehind + m_dirVectors[0], posBehind, checkers, checkers_count, m_dirVectors[0], multiKill, func);//Move leftUp
+					FindPossibleTurnRecursive(selectedChecker, posBehind + m_dirVectors[1], posBehind, checkers, checkers_count, m_dirVectors[1], multiKill, func);//Move rightUp
+					FindPossibleTurnRecursive(selectedChecker, posBehind + m_dirVectors[2], posBehind, checkers, checkers_count, m_dirVectors[2], multiKill, func);//Move leftDown
+					FindPossibleTurnRecursive(selectedChecker, posBehind + m_dirVectors[3], posBehind, checkers, checkers_count, m_dirVectors[3], multiKill, func);//Move rightDown
 
 					return;
 				}
@@ -1017,10 +1043,10 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 
 	}
 
-	FindPossibleTurnRecursive(position + m_dirVectors[0], startPosition, m_dirVectors[0], false, func);//Move leftUp
-	FindPossibleTurnRecursive(position + m_dirVectors[1], startPosition, m_dirVectors[1], false, func);//Move rightUp
-	FindPossibleTurnRecursive(position + m_dirVectors[2], startPosition, m_dirVectors[2], false, func);//Move leftDown
-	FindPossibleTurnRecursive(position + m_dirVectors[3], startPosition, m_dirVectors[3], false, func);//Move rightDown	
+	FindPossibleTurnRecursive(selectedChecker, position + m_dirVectors[0], startPosition, checkers, checkers_count, m_dirVectors[0], false, func);//Move leftUp
+	FindPossibleTurnRecursive(selectedChecker, position + m_dirVectors[1], startPosition, checkers, checkers_count, m_dirVectors[1], false, func);//Move rightUp
+	FindPossibleTurnRecursive(selectedChecker, position + m_dirVectors[2], startPosition, checkers, checkers_count, m_dirVectors[2], false, func);//Move leftDown
+	FindPossibleTurnRecursive(selectedChecker, position + m_dirVectors[3], startPosition, checkers, checkers_count, m_dirVectors[3], false, func);//Move rightDown	
 }
 
 bool game_engine_core::Main_Game_logic::IsAllPossibleTurnsSelected()
@@ -1055,11 +1081,11 @@ void game_engine_core::Main_Game_logic::FindPossibleTurns(std::function<bool(Vec
 	{
 		m_multipleTakes = 1;
 
-		FindAllPosibleTurnsForKingRecursive(pos, pos, CallBack);
+		FindAllPosibleTurnsForKingRecursive(m_selectedChecker, pos, pos, m_checkers, m_checkersCount, CallBack);
 	}
 	else
 	{
-		FindPossibleTurnRecursive(pos, pos, Vector<short>(), false, func);
+		FindPossibleTurnRecursive(m_selectedChecker, pos, pos, m_checkers, m_checkersCount, Vector<short>(), false, func);
 	}
 }
 
@@ -1089,8 +1115,8 @@ signed char game_engine_core::Main_Game_logic::m_multipleTakes = -1;
 
 #pragma region Ctor
 
-game_engine_core::ai_modules::checker_ai::checker_ai(console_graphics_utility* cgu):
-Main_Game_logic(cgu) {}
+game_engine_core::ai_modules::checker_ai::checker_ai(console_graphics_utility* cgu) :
+	Main_Game_logic(cgu) {}
 
 #pragma endregion
 
@@ -1100,8 +1126,12 @@ Main_Game_logic(cgu) {}
 void game_engine_core::ai_modules::checker_ai::Move(Vector<ushort> selPosition)
 {
 	auto chToBeKilledPtr = &m_checkersToBeKilled;
-	
+
 	Checker* selCheckerPtr = m_selectedChecker;
+
+	const auto& boardPos = m_Board_position;
+
+	const auto& boardWidth = m_boardWidth;
 
 	//Fighting
 
@@ -1154,12 +1184,14 @@ void game_engine_core::ai_modules::checker_ai::Move(Vector<ushort> selPosition)
 	}
 
 	//Iterate all posible checkers for kill
-	chToBeKilledPtr->Iterate([diff]
-		 (Checker* ch)->bool
+	chToBeKilledPtr->Iterate([diff, boardPos, boardWidth]
+	(Checker* ch)->bool
 		{
 			if (diff.Convert_To(value_convertion::Converters::SHORT_TO_USHORT) == ch->GetPosition())
 			{
-				ch->Kill();				
+				ch->Kill();
+
+				ch->SetPosition(Vector<ushort>(boardPos[0] + boardWidth + 10, 2));
 			}
 			return true;
 		}
@@ -1249,7 +1281,7 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 	{
 		return;
 	}
-	
+
 	Checker* board = new Checker[m_checkersCount];
 
 	for (size_t i = 0; i < m_checkersCount; i++)
@@ -1274,7 +1306,7 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 
 		m_selectedChecker = m_checkers + i;
 
-		m_console_graphics_utility->SetCursorPosition(m_selectedChecker->GetPosition());
+		//m_console_graphics_utility->SetCursorPosition(m_selectedChecker->GetPosition());
 
 		this->FindPossibleTurns();
 
@@ -1299,16 +1331,16 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 				m_possibleTurns.Clear();
 			}
 
-			BuildGameTreeRecursive(m_checkers + i, m_checkers + i, !whiteBlack, 2, 0, board);
+			BuildGameTreeRecursive(board + i, board + i, !whiteBlack, 3, 0, board, m_checkersCount);
 
 			//Analize game tree
-		}		
+		}
 	}
 }
 
-void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* current_checker, 
+void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* current_checker,
 	Checker* prev_checker, bool whiteBlack,
-	size_t depth, size_t current_depth, Checker* border_Copy)
+	size_t depth, size_t current_depth, Checker* checkers_Copy, size_t checkers_count)
 {
 	using namespace nonlinear_data_structures;
 
@@ -1341,34 +1373,42 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 		end = mid;
 	}
 
-	m_selectedChecker = current_checker;
+	auto pos = current_checker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
-	auto pos = m_selectedChecker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
-
-	this->FindPossibleTurnRecursive(pos, pos, Vector<short>(), false,[this, start, end, border_Copy, current_checker, cgu,
-		whiteBlack, depth, current_depth, prev_checker]
+	this->FindPossibleTurnRecursive(current_checker, pos, pos, checkers_Copy, checkers_count,
+		Vector<short>(), false,
+		[this, start, end, checkers_Copy, current_checker, cgu,
+		whiteBlack, depth, current_depth, prev_checker, checkers_count]
 	(Vector<short> Check_Pos, Vector<short> Check_Pos2)->bool
 		{
-			if (Check_Pos != Check_Pos2)//Stop recurtion step when we have found multi-kill
-			{
-				return true;
-			}
+			//if (Check_Pos != Check_Pos2)//Stop recurtion step when we have found multi-kill sequence
+			//{
+			//	return true;
+			//}
 
 			cgu->SetCursorPosition(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
 
 			edge<Vector<ushort>> e = edge<Vector<ushort>>(prev_checker->GetPosition(), Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
 
+			m_selectedChecker = current_checker;
+
 			Move(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
 
-			int e_v = FindEuristicValue(border_Copy);
+			system("CLS");
+
+			this->DrawBoard(m_board, 8, 8);
+
+			this->DrawCheckers(checkers_Copy, m_checkersCount);
+
+			int e_v = FindEuristicValue(checkers_Copy);
 
 			m_eur_ValueTable.AddToTheEnd(key_value_pair<Vector<short>, int>(Check_Pos, e_v));
 
 			m_game_tree.AddEdge(e);
 
-			for (size_t i = start; i < end; i++)
+			for (size_t i = start; i <= end; i++)
 			{
-				BuildGameTreeRecursive(border_Copy + i, current_checker, !whiteBlack, depth, current_depth + 1, border_Copy);
+				BuildGameTreeRecursive(checkers_Copy + i, current_checker, !whiteBlack, depth, current_depth + 1, checkers_Copy, checkers_count);
 			}
 
 			return false;//Don't stop recurtion
@@ -1863,30 +1903,9 @@ void game_engine_core::GameController::SelectMove(std::function<void()> PrintFun
 
 void game_engine_core::GameController::Draw()
 {
-	this->DrawBoard();
+	this->DrawBoard(m_board, 8,  8);
 
-	this->DrawCheckers();
-}
-
-void game_engine_core::GameController::DrawBoard()
-{
-	for (size_t i = 0; i < 8; i++)
-	{
-		for (size_t j = 0; j < 8; j++)
-		{
-			(m_board[i] + j)->Render(*m_console_graphics_utility);
-		}
-	}
-}
-
-void game_engine_core::GameController::DrawCheckers()
-{
-	size_t checkersCount = this->m_checkersCount;
-
-	for (size_t i = 0; i < checkersCount; i++)
-	{
-		(m_checkers + i)->Render(*m_console_graphics_utility);
-	}
+	this->DrawCheckers(m_checkers, m_checkersCount);
 }
 
 game_engine_core::GameController* game_engine_core::GameController::Initialize(console_graphics_utility* utility,
