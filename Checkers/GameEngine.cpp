@@ -934,7 +934,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 	const Vector<short>& position,
 	Vector<short>& startPosition, Checker* checkers, size_t checkers_count,
 	const Vector<short>& dirVector, bool multiKill,
-	std::function<bool(Vector<short> position, Vector<short> PrevPos)> func)
+	std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func)
 {
 	m_console_graphics_utility->SetCursorPosition(position.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
 
@@ -954,7 +954,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 			{
 				if (func != nullptr)
 				{
-					func(position, position);
+					func(position, position, multiKill);
 				}
 				else
 				{
@@ -967,7 +967,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 			{
 				if (func != nullptr)
 				{
-					func(position, position);
+					func(position, position, multiKill);
 				}
 				else
 				{
@@ -1012,7 +1012,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 
 					if (func != nullptr)
 					{
-						if (func(posBehind, position)) { return; }//Stop recurtion when we are building game tree
+						func(posBehind, position, multiKill);
 					}
 
 					//Posibility of multiKill
@@ -1063,7 +1063,7 @@ bool game_engine_core::Main_Game_logic::IsAllPossibleTurnsSelected()
 	return result;
 }
 
-void game_engine_core::Main_Game_logic::FindPossibleTurns(std::function<bool(Vector<short> position, Vector<short> PrevPos)> func)
+void game_engine_core::Main_Game_logic::FindPossibleTurns(std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func)
 {
 	m_multipleTakes = -1;
 
@@ -1333,6 +1333,10 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 
 			BuildGameTreeRecursive(board + i, board + i, !whiteBlack, 3, 0, board, m_checkersCount);
 
+			int a = 0;
+
+			m_game_tree;
+
 			//Analize game tree
 		}
 	}
@@ -1352,6 +1356,7 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 
 	console_graphics_utility* cgu = m_console_graphics_utility;
 
+	
 	if (depth == current_depth)//Stop analizing
 		return;
 
@@ -1375,43 +1380,91 @@ void game_engine_core::ai_modules::checker_ai::BuildGameTreeRecursive(Checker* c
 
 	auto pos = current_checker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
+	static Vector<short> tempCurrPos;
+
+	static Vector<ushort> tempPos;
+	
 	this->FindPossibleTurnRecursive(current_checker, pos, pos, checkers_Copy, checkers_count,
 		Vector<short>(), false,
 		[this, start, end, checkers_Copy, current_checker, cgu,
 		whiteBlack, depth, current_depth, prev_checker, checkers_count]
-	(Vector<short> Check_Pos, Vector<short> Check_Pos2)->bool
+	(Vector<short> Check_Pos, Vector<short> Check_Pos2, bool multiKill)
 		{
-			//if (Check_Pos != Check_Pos2)//Stop recurtion step when we have found multi-kill sequence
-			//{
-			//	return true;
-			//}
-
-			cgu->SetCursorPosition(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
-
-			edge<Vector<ushort>> e = edge<Vector<ushort>>(prev_checker->GetPosition(), Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
-
-			m_selectedChecker = current_checker;
-
-			Move(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
-
-			system("CLS");
-
-			this->DrawBoard(m_board, 8, 8);
-
-			this->DrawCheckers(checkers_Copy, m_checkersCount);
-
-			int e_v = FindEuristicValue(checkers_Copy);
-
-			m_eur_ValueTable.AddToTheEnd(key_value_pair<Vector<short>, int>(Check_Pos, e_v));
-
-			m_game_tree.AddEdge(e);
-
-			for (size_t i = start; i <= end; i++)
+			if (!multiKill)//Calculating a single move
 			{
-				BuildGameTreeRecursive(checkers_Copy + i, current_checker, !whiteBlack, depth, current_depth + 1, checkers_Copy, checkers_count);
+				cgu->SetCursorPosition(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
+
+				edge<Vector<ushort>> e = edge<Vector<ushort>>(prev_checker->GetPosition(), Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
+
+				m_selectedChecker = current_checker;
+				
+				Move(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
+
+				system("CLS");
+
+				this->DrawBoard(m_board, 8, 8);
+
+				this->DrawCheckers(checkers_Copy, m_checkersCount);
+
+				int e_v = FindEuristicValue(checkers_Copy);
+
+				m_eur_ValueTable.AddToTheEnd(key_value_pair<Vector<short>, int>(Check_Pos, e_v));
+
+				m_game_tree.AddEdge(e);
+
+				tempPos = e.GetFrom();
+
+				tempCurrPos = Check_Pos;				
 			}
 
-			return false;//Don't stop recurtion
+			if(multiKill) //Calculate multiple kill 
+			{
+				cgu->SetCursorPosition(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
+
+				m_selectedChecker = current_checker;
+			
+				Move(Check_Pos.Convert_To(Converters::SHORT_TO_USHORT));
+
+				system("CLS");
+
+				this->DrawBoard(m_board, 8, 8);
+
+				this->DrawCheckers(checkers_Copy, m_checkersCount);
+
+				int e_v = FindEuristicValue(checkers_Copy);
+
+				//Modify
+
+				auto *const edge = m_game_tree.GetEdge(tempPos, tempCurrPos.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
+				if(edge != nullptr)
+					edge->GetData().SetTo(Check_Pos.Convert_To(value_convertion::Converters::SHORT_TO_USHORT));
+				
+				m_eur_ValueTable.RemoveNode(key_value_pair<Vector<short>, int>(tempCurrPos, 0));
+
+				m_eur_ValueTable.AddToTheEnd(key_value_pair<Vector<short>, int>(Check_Pos, e_v));
+
+				tempCurrPos = Check_Pos;
+			}
+					
+			if (m_checkersToBeKilled.GetCount() > 0)
+			{
+				m_checkersToBeKilled.Clear();
+			}
+
+			if (m_possibleTurns.GetCount() > 0)
+			{
+				m_possibleTurns.Clear();
+			}
+
+			if (depth != current_depth + 1)
+			{
+				for (size_t i = start; i <= end; i++)
+				{
+					if((checkers_Copy + i)->isAlive())
+						BuildGameTreeRecursive(checkers_Copy + i, current_checker, !whiteBlack, depth, current_depth + 1, checkers_Copy, checkers_count);
+				}
+			}
+						
 		});
 
 }
@@ -2028,7 +2081,7 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 			{
 				index += 1;
 			}
-
+			
 			if (m_selectedChecker != nullptr)
 				if (m_selectedChecker->isFocused())
 					m_selectedChecker->UnFocus();

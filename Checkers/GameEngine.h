@@ -310,7 +310,7 @@ namespace game_engine_core
 			bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
 			bool checker_under_attack = false);
 
-		void FindPossibleTurns(std::function<bool(Vector<short> position, Vector<short> PrevPos)> func = nullptr);
+		void FindPossibleTurns(std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func = nullptr);
 
 		bool OutOfBorders(const Vector<short>& position);
 
@@ -324,8 +324,8 @@ namespace game_engine_core
 		void FindPossibleTurnRecursive(Checker* selectedChecker, const Vector<short>& position, 
 			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
 			const Vector<short>& dirVector = Vector<short>(),
-			bool multiKill = false, std::function<bool(Vector<short> position, 
-				Vector<short> PrevPos)> func = nullptr);
+			bool multiKill = false, std::function<void(Vector<short> position, 
+				Vector<short> PrevPos, bool multiKill)> func = nullptr);
 
 		void DrawBoard(Cell** board, size_t rows_count, size_t colums_count);
 
