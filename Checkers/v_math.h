@@ -351,6 +351,30 @@ namespace vector_math
 
 #pragma endregion
 
+#pragma region Input
+
+		friend std::istream& operator >> (std::istream& is, Vector<T>& vector)
+		{
+			ConsoleCoords<T> cords;
+
+			is >> cords;
+
+			return is;
+		}
+
+#pragma endregion
+
+#pragma region Output
+
+		friend std::ostream& operator << (std::ostream& os, Vector<T>& vector)
+		{
+			os <<" ( "<< vector.GetX() <<" ; " << vector.GetY() << " ) " << std::endl;
+
+			return os;
+		}
+
+#pragma endregion
+
 
 #pragma endregion
 

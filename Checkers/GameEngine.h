@@ -3,7 +3,7 @@
 #define GAMEENGINE_H
 
 typedef unsigned short ushort;
-
+#include<cstdlib>
 #include"v_math.h"
 #include"Console_graphics.h"
 #include"DataStructures.h"
@@ -310,7 +310,7 @@ namespace game_engine_core
 			bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
 			bool checker_under_attack = false);
 
-		void FindPossibleTurns(std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func = nullptr);
+		void FindPossibleTurns(bool whiteBlack = true, std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func = nullptr);
 
 		bool OutOfBorders(const Vector<short>& position);
 
@@ -324,12 +324,14 @@ namespace game_engine_core
 		void FindPossibleTurnRecursive(Checker* selectedChecker, const Vector<short>& position, 
 			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
 			const Vector<short>& dirVector = Vector<short>(),
-			bool multiKill = false, std::function<void(Vector<short> position, 
-				Vector<short> PrevPos, bool multiKill)> func = nullptr);
+			bool multiKill = false, std::function<void(Vector<short> prev_position,
+				Vector<short> current_position, bool multiKill)> func = nullptr);
 
 		void DrawBoard(Cell** board, size_t rows_count, size_t colums_count);
 
 		void DrawCheckers(Checker* checkers, size_t checkers_count);
+
+
 
 #pragma region Checker Board
 			
@@ -355,6 +357,8 @@ namespace game_engine_core
 
 		console_graphics_utility* m_console_graphics_utility;
 
+		bool m_use_AI;
+
 #pragma endregion
 		
 #pragma region Calculations of Turns
@@ -376,9 +380,115 @@ namespace game_engine_core
 
 	namespace ai_modules
 	{
+		enum difficulty_level
+		{
+			easy = 0, //Random move selection or selection of a best take move 
+			medium, //selection of best take move, using Mini Max for other moves depth = 2
+			hard//selection of best take move, using Mini Max for other moves depth = 3
+		};
+
+		template<class T>
+		struct turn
+		{
+			turn(T start) : m_start(start), m_Takes(0), m_eur_value(0), m_mini_max_used(false) 
+			{ m_current_id = m_id++; }
+
+			~turn() { m_ends.clear(); }
+
+			void AddEnd(T end)
+			{
+				m_ends.push_back(end);
+			}
+
+			void Set_Prev_Dictionary(const std::map<T, T>& prev_dictionary)
+			{
+				m_prev_dictionary = prev_dictionary;
+			}
+
+			void Set_CountOfTakes(size_t takes_count)
+			{
+				m_Takes = takes_count;
+			}
+
+			void Set_Eur_Value(size_t eurValue)
+			{
+				m_mini_max_used = true;
+
+				m_eur_value = eurValue;
+			}
+
+			bool Mini_Max_Used() const
+			{
+				return m_mini_max_used;
+			}
+
+			const size_t& GetTakesCount()
+			{
+				return m_Takes;
+			}
+
+			const size_t& GetEurValue()
+			{
+				return m_eur_value;
+			}
+
+			const size_t& Getid()
+			{
+				return m_current_id;
+			}
+
+			const std::map<T, T>& Get_Prev_Dictionary() const
+			{
+				return m_prev_dictionary;
+			}
+
+			const std::vector<T>& GetEndPoints() const
+			{
+				return m_ends;
+			}
+
+			const T& GetStart() const
+			{
+				return m_start;
+			}
+#pragma region Operators
+
+			bool operator == (const turn<T>& other)const
+			{
+				return this->m_current_id == other.m_current_id;
+			}
+
+			bool operator != (const turn<T>& other) const
+			{
+				return this->m_current_id != other.m_current_id;
+			}
+
+#pragma endregion
+
+
+		private:
+			std::vector<T> m_ends;
+
+			std::map<T, T> m_prev_dictionary;
+
+			T m_start;//Checkers coords
+
+			static size_t m_id;
+
+			size_t m_current_id;
+
+			size_t m_Takes;
+
+			size_t m_eur_value;
+
+			bool m_mini_max_used;
+		};
+
+		template<class T>
+		size_t game_engine_core::ai_modules::turn<T>::m_id = 0;
+
 		struct checker_ai : public Main_Game_logic
 		{		
-
 			checker_ai(console_graphics_utility* cgu);
 
 #pragma region Init
@@ -386,35 +496,62 @@ namespace game_engine_core
 				Vector<ushort> board_Position, Checker* checkers, Cell** board,
 				ushort Cell_height);
 #pragma endregion
-			void SelectPossibleMove(bool whiteBlack, size_t depth, 
-				size_t current_depth);
+			void SelectPossibleMove(bool whiteBlack);
+			
+			Checker* DeepBoardCopy(Checker* checkers, size_t checkers_countcount);
 
 			void BuildGameTreeRecursive(Checker* current_checker, Checker* prev_checker, bool whiteBlack,
-				size_t depth, size_t current_depth, Checker* board_copy, size_t checkers_count);
+				size_t depth, size_t current_depth, Checker* board_copy, size_t checkers_count,bool init = false);
 
 			void Move(Vector<ushort> selPosition);
 
 			int FindEuristicValue(Checker* board);
 
+			void Set_Difficulty(const difficulty_level& diff);
+			
+			linear_data_structures::single_linked_list<Vector<short>>& Get_Selected_Route_Coords();
+
+			void Clear_Selected_Route_Coords();
+
+			size_t GetMaxTakesCount();
+
+			void Reset_Data();
+
 		private:
 			//bool who_is_AI;//true - white false - black//May be we use it later now Black Player is AI
+
+			difficulty_level m_difficulty;
 
 			nonlinear_data_structures::edge_list_graph<Vector<ushort>> m_game_tree;
 
 			linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Vector<short>, int>> m_eur_ValueTable;
 
+			std::vector<linear_data_structures::key_value_pair<Vector<short>, Vector<short>>> m_PrevDictionary;
+
 			ushort m_Cell_Height;
+
+			Vector<ushort> m_Prev_Checker_Temp;
+
+			linear_data_structures::single_linked_list<turn<Vector<short>>> m_Possible_Calculated_Turns;
+			
+			linear_data_structures::single_linked_list<Vector<short>> m_Selected_Route_Coords;
+
+			int m_id_of_max_takes;
+
+			size_t m_max_takes;					
 		};
 	}
 			
 	struct GameController : public Main_Game_logic
 	{
+		void SetDifficulty(const game_engine_core::ai_modules::difficulty_level& diff);
+
 		void SelectChecker(bool whiteBlack, std::function<void()> PrintFunc = nullptr, 
 			std::function<void()> PrintConfirmFunc = nullptr);
 						
-		void HighLightPossibleTurns();
+		void HighLightPossibleTurns(bool whiteBlack);
 
-		void SelectMove(std::function<void()> PrintFunc = nullptr,
+		void SelectMove(bool whiteBlack = true,std::function<void()> PrintFunc = nullptr,
 			std::function<void()> PrintConfirmFunc = nullptr
 			);
 
@@ -438,9 +575,7 @@ namespace game_engine_core
 	private:
 				
 		ai_modules::checker_ai* m_ai;
-
-		bool m_use_AI;
-				
+						
 		GameController(console_graphics_utility *console_graphics_utility,
 			Vector<ushort> BoardPosiion, CellBuildingOptions* cellbuildingOptions,
 			CheckerBuildingOptions* checkerBuildingOptions, 

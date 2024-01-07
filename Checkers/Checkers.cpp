@@ -2,7 +2,6 @@
 #include"v_math.h"
 #include"GameEngine.h"
 #include"Console_graphics.h"
-#include<cstdlib>
 #include"DataStructures.h"
 
 #pragma region Functions
@@ -25,6 +24,8 @@ int main()
 	using namespace vector_math;
 
 	using namespace game_engine_core;
+
+	using namespace game_engine_core::ai_modules;
 
 	using namespace console_graphics;
 
@@ -167,6 +168,8 @@ int main()
 
 		string name2 = "Pl2";
 
+		gc->SetDifficulty(difficulty_level::easy);
+
 		if (start)
 		{
 			do
@@ -208,11 +211,11 @@ int main()
 							textPos + vector_math::Vector<ushort>(0, 2));
 					});
 
-				gc->FindPossibleTurns();
+				gc->FindPossibleTurns(whiteBlack);
 
-				gc->HighLightPossibleTurns();
+				gc->HighLightPossibleTurns(whiteBlack);
 
-				gc->SelectMove([name1, name2, cgu, textPos, whiteBlack]()
+				gc->SelectMove(whiteBlack, [name1, name2, cgu, textPos, whiteBlack]()
 					{
 						cgu->PrintAtCenter("<<<Checkers the Game>>>");
 

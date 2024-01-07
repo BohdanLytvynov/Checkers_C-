@@ -1,6 +1,7 @@
 #include<vector>
 #include<map>
 #include<functional>
+#include<string>
 
 #ifndef DATASTRUCTURES_H
 
@@ -849,15 +850,29 @@ namespace nonlinear_data_structures
 			m_verteces = new linear_data_structures::single_linked_list<Tkey>();
 		}
 
+		edge_list_graph(const edge_list_graph<Tkey>& other) = delete;
+
 		virtual ~edge_list_graph()
 		{
 			m_graph->Clear();
 
 			m_verteces->Clear();
-
+			
 			delete m_graph;
 
 			delete m_verteces;
+		}
+
+		virtual void Clear()
+		{
+			m_graph->Clear();
+
+			m_verteces->Clear();
+		}
+
+		virtual bool isEmpty()
+		{
+			return m_graph->isEmpty();
 		}
 
 		virtual void AddEdge(const edge<Tkey>& edge)
@@ -872,7 +887,7 @@ namespace nonlinear_data_structures
 				m_verteces->AddToTheEnd(edge.GetTo());
 			}
 
-			m_graph->AddToTheEnd(edge);			
+			m_graph->AddToTheEnd(edge);				
 		}
 
 		virtual void RemoveEdge(const edge<Tkey>& edge)
@@ -890,6 +905,19 @@ namespace nonlinear_data_structures
 			return m_graph->operator[](edge<Tkey>(from, to));
 		}
 		
+		virtual const size_t& GetEdgeCount() const
+		{
+			return m_graph->GetCount();
+		}
+
+		virtual void For(std::function<bool(edge<Tkey> edge)> foreach_function)
+		{
+			if (m_graph->isEmpty())			
+				return;
+			
+			m_graph->IterateFromStartToEnd(foreach_function);
+		}
+
 		virtual const edge<Tkey>* const GetEdge(Tkey from, Tkey to) const
 		{
 			if (m_graph->isEmpty())
@@ -969,7 +997,7 @@ namespace nonlinear_data_structures
 		{
 			std::vector<Tkey> result;
 
-			m_graph->IterateFromStartToEnd([&result](edge<Tkey> edge)->bool
+			m_graph->IterateFromStartToEnd([&result, vertexKey](edge<Tkey> edge)->bool
 				{
 					if (edge.GetFrom() == vertexKey)
 					{
@@ -983,17 +1011,17 @@ namespace nonlinear_data_structures
 			return result;
 		}
 
-		void depth_first_search(Tkey start, std::function<bool(Tkey Curr_vertex, std::map<Tkey, bool>)> dir_call = nullptr,
+		void depth_first_search(Tkey start, std::function<bool(Tkey Prev_vertex, Tkey Curr_vertex, std::map<Tkey, bool>, bool end_found)> dir_call = nullptr,
 			std::function<bool(Tkey Curr_vertex)> rec_CallBack = nullptr)
 		{
 			std::map<Tkey, bool> v_d = generate_visit_dictionary();
 
-			dfs(start, v_d, dir_call, rec_CallBack);
+			dfs(start, start, v_d, dir_call, rec_CallBack);
 		}
 
 		std::map<Tkey, bool> generate_visit_dictionary()
 		{
-			std::map<Tkey, bool> v_d = std::map<Tkey, bool>(m_verteces->GetCount());
+			std::map<Tkey, bool> v_d;
 
 			m_verteces->Iterate([&v_d](Tkey elem)->bool
 				{
@@ -1005,36 +1033,57 @@ namespace nonlinear_data_structures
 			return v_d;
 		}
 
+		std::map<Tkey, Tkey> generate_prev_dictionary(Tkey default_Value)
+		{
+			std::map<Tkey, Tkey> prev;
+
+			m_verteces->Iterate([&prev, default_Value](Tkey vertex)->bool
+				{
+					prev[vertex] = default_Value;
+
+					return true;
+				});
+
+			return prev;
+		}
+
+#pragma region Operator
+
+		edge_list_graph<Tkey>& operator = (const edge_list_graph<Tkey>& other) = delete;
+
+#pragma endregion
+
+
 	private:
 
-		void dfs(Tkey start, std::map<Tkey, bool>& v_d, 
-			std::function<bool (Tkey Curr_vertex, std::map<Tkey, bool>)> dir_call = nullptr,
+		void dfs(Tkey current, Tkey prev, std::map<Tkey, bool>& v_d, 
+			std::function<bool (Tkey Prev_vertex, Tkey Curr_vertex, std::map<Tkey, bool>, bool end_found)> dir_call = nullptr,
 			std::function<bool (Tkey Curr_vertex)> rec_CallBack = nullptr)
 		{
-			v_d[start] = true;
+			v_d[current] = true;
+
+			std::vector<Tkey> adjVerteces = this->Get_Adjacent_Verteces(current);
 
 			if (dir_call != nullptr)
-				if (!dir_call(start, v_d))
+				if (!dir_call(prev, current, v_d, adjVerteces.size() == 0? true : false))
 					return;
-
-			std::vector<Tkey> adjVerteces = this->Get_Adjacent_Verteces(start);
-
+			
 			for (auto next : adjVerteces)
 			{
 				if (v_d[next] == false)
 				{
-					dfs(next, v_d, dir_call, rec_CallBack);
+					dfs(next, current, v_d, dir_call, rec_CallBack);
 				}
 			}
 
 			if (rec_CallBack != nullptr)
-				if (!rec_CallBack(start))
+				if (!rec_CallBack(current))
 					return;
 		}
 
 		linear_data_structures::doubled_linked_list<edge<Tkey>>* m_graph;
 
-		linear_data_structures::single_linked_list<Tkey>* m_verteces;		
+		linear_data_structures::single_linked_list<Tkey>* m_verteces;			
 	};
 
 	template<typename Tkey, typename Tdata>
@@ -1081,6 +1130,85 @@ namespace nonlinear_data_structures
 	private:
 		linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Tkey, Tdata>>* m_vertex_data;
 	};
+
+	namespace graph_math
+	{
+		template<class Tkey>
+		struct solver_base
+		{
+			solver_base(nonlinear_data_structures::edge_list_graph<Tkey> *graph)
+			{
+				m_graph = graph;
+			}
+
+		protected:
+			nonlinear_data_structures::edge_list_graph<Tkey> *m_graph;
+		};
+
+		template<typename Tkey>
+		struct shortest_path_problem : protected solver_base<Tkey>
+		{
+			static std::vector<Tkey> reconstruct_path(Tkey start, Tkey end, std::map<Tkey, Tkey> prev_Dictionary, Tkey emptyValue)
+			{
+				std::vector<Tkey> path;
+
+				linear_data_structures::doubled_linked_list<Tkey> temp;
+
+				for (Tkey current = end; current != emptyValue; current = prev_Dictionary[current])
+				{
+					temp.AddToTheEnd(current);
+				}
+
+				//Reverse
+
+				temp.IterateFromEndToStart(
+					[&path](Tkey elem)->bool
+					{
+						path.push_back(elem);
+
+						return true;
+					}
+				);
+
+				if (path.size() == 0)
+				{
+					return std::vector<Tkey>();
+				}
+				
+				if (path[0] == start)
+				{
+					return path;
+				}
+
+				return std::vector<Tkey>();
+				
+			}
+
+			shortest_path_problem(edge_list_graph<Tkey>* &graph) :solver_base<Tkey>(graph) {}
+
+			void Solve(Tkey start)
+			{								
+				using namespace vector_math;
+
+				using namespace nonlinear_data_structures;
+
+				auto prev_visit_dictionary = this->m_graph->generate_prev_dictionary(Vector<short>());
+
+				this->m_graph->depth_first_search(start,
+					[&prev_visit_dictionary](Vector<short> prev, Vector<short> current, std::map<Vector<short>, bool> v_d, bool isEnd)->bool
+					{
+						prev_visit_dictionary[current] = prev;
+
+						if (isEnd)//End of current graph found
+						{
+
+						}
+
+						return true;
+					});
+			}
+		};
+	}
 
 }
 
