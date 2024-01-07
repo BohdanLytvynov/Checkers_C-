@@ -62,7 +62,7 @@ int main()
 	ai_modules::checker_ai* ai = new ai_modules::checker_ai(cgu);
 
 	game_engine_core::GameController* gc = GameController::Initialize(cgu, CheckerBoardPosition,
-		&cellOpt, &checkOpt, ai);
+		&cellOpt, &checkOpt, nullptr);
 	
 	char input;
 

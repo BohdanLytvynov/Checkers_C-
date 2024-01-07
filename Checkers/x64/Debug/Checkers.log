@@ -21,29 +21,27 @@ D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(1791,82): warning C4267: �
           ]
 D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(1826,19): warning C4838: Преобразование из "ushort" в "short" требует сужающего преобразования.
 D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(1826,30): warning C4838: Преобразование из "ushort" в "short" требует сужающего преобразования.
-D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2121,20): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
-D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2053,7): warning C4101: prevColor: неиспользованная локальная переменная
-D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2265,37): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
-D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2279,28): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2122,20): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
+D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2054,7): warning C4101: prevColor: неиспользованная локальная переменная
+D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2266,37): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2280,28): warning C4267: =: преобразование из "size_t" в "int"; возможна потеря данных
 D:\C++ Projects\Work\Checkers\Checkers\v_math.h(254,65): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
 D:\C++ Projects\Work\Checkers\Checkers\v_math.h(253): message : во время компиляции функции-члена класс шаблон "double vector_math::Vector<short>::GetLength(void) const"
 D:\C++ Projects\Work\Checkers\Checkers\v_math.h(132): message : выполняется компиляция ссылки на экземпляр шаблон функции "double vector_math::Vector<short>::GetLength(void) const"
 D:\C++ Projects\Work\Checkers\Checkers\GameEngine.h(310): message : выполняется компиляция ссылки на экземпляр класс шаблон функции "vector_math::Vector<short>"
 D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(716): warning C4715: game_engine_core::Main_Game_logic::OutOfBorders: значение возвращается не при всех путях выполнения
-D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2221): warning C4715: game_engine_core::GameController::Initialize: значение возвращается не при всех путях выполнения
+D:\C++ Projects\Work\Checkers\Checkers\GameEngine.cpp(2222): warning C4715: game_engine_core::GameController::Initialize: значение возвращается не при всех путях выполнения
 D:\C++ Projects\Work\Checkers\Checkers\DataStructures.h(910): warning C4172: возвращение адреса локальной или временной переменной
 D:\C++ Projects\Work\Checkers\Checkers\DataStructures.h(910): warning C4172: возвращение адреса локальной или временной переменной
   Checkers.vcxproj -> D:\C++ Projects\Work\Checkers\x64\Debug\Checkers.exe
 
 Итоги по проекту:
-     1357 мс вызовов   1 D:\C++ Projects\Work\Checkers\Checkers\Checkers.vcxproj
-               1357 мс вызовов   1 Build                                   
+     1300 мс вызовов   1 D:\C++ Projects\Work\Checkers\Checkers\Checkers.vcxproj
+               1300 мс вызовов   1 Build                                   
 
 Итоги по целям:
         0 мс вызовов   1 AfterBuildCompileEvent                  
-        0 мс вызовов   1 _Link                                   
-        0 мс вызовов   1 AfterLink                               
-        0 мс вызовов   1 ComputeLinkSwitches                     
+        0 мс вызовов   1 ComputeLinkImportLibraryOutputsForClean 
         0 мс вызовов   1 PreLinkEvent                            
         0 мс вызовов   1 DoLinkOutputFilesMatch                  
         0 мс вызовов   1 PrepareResourceNames                    
@@ -51,115 +49,117 @@ D:\C++ Projects\Work\Checkers\Checkers\DataStructures.h(910): warning C4172: в�
         0 мс вызовов   1 SplitResourcesByCulture                 
         0 мс вызовов   1 ComputeManifestInputsTargets            
         0 мс вызовов   1 ComputeLinkInputsFromProject            
-        0 мс вызовов   1 _ALink                                  
         0 мс вызовов   1 ComputeCLGeneratedLinkInputs            
+        0 мс вызовов   1 ComputeManifestGeneratedLinkerInputs    
         0 мс вызовов   1 ComputeRCGeneratedLinkInputs            
         0 мс вызовов   1 ComputeRCOutputs                        
         0 мс вызовов   1 BeforeLink                              
-        0 мс вызовов   1 ComputeLegacyManifestEmbedding          
         0 мс вызовов   1 BuildLinkTraverse                       
         0 мс вызовов   1 BuildCompile                            
         0 мс вызовов   1 _BuildCompileAction                     
+        0 мс вызовов   1 FinalizeBuildStatus                     
         0 мс вызовов   1 _ResourceCompile                        
         0 мс вызовов   1 AfterResourceCompile                    
+        0 мс вызовов   1 MakeDirsForResourceCompile              
         0 мс вызовов   1 BeforeResourceCompile                   
-        0 мс вызовов   1 ComputeCLOutputs                        
+        0 мс вызовов   1 AfterLink                               
+        0 мс вызовов   1 _Link                                   
+        0 мс вызовов   1 _ALink                                  
         0 мс вызовов   1 _Manifest                               
-        0 мс вызовов   1 RegisterOutput                          
-        0 мс вызовов   1 ResolvedXDCMake                         
-        0 мс вызовов   1 IncrementalClean                        
         0 мс вызовов   1 AfterBuild                              
         0 мс вызовов   1 BuildLink                               
         0 мс вызовов   1 _BuildLinkAction                        
         0 мс вызовов   1 PostBuildEvent                          
         0 мс вызовов   1 PrepareForRun                           
-        0 мс вызовов   1 CopyFilesToOutputDirectory              
         0 мс вызовов   1 _CheckForCompileOutputs                 
         0 мс вызовов   1 _CopySourceItemsToOutputDirectory       
         0 мс вызовов   1 _GetCopyToOutputDirectoryItemsFromThisProject
-        0 мс вызовов   1 GetCopyToOutputDirectoryXamlAppDefs     
         0 мс вызовов   1 _PopulateCommonStateForGetCopyToOutputDirectoryItems
         0 мс вызовов   1 _Deploy                                 
+        0 мс вызовов   1 _ClCompile                              
         0 мс вызовов   1 _Appverifier                            
-        0 мс вызовов   1 CreateSatelliteAssemblies               
+        0 мс вызовов   1 ContentFilesProjectOutputGroup          
+        0 мс вызовов   1 MakeDirsForFxc                          
         0 мс вызовов   1 SatelliteDllsProjectOutputGroup         
-        0 мс вызовов   1 BuiltProjectOutputGroup                 
         0 мс вызовов   1 _BscMake                                
         0 мс вызовов   1 MakeDirsForBscMake                      
         0 мс вызовов   1 ComputeCLCompileGeneratedSbrFiles       
         0 мс вызовов   1 _XdcMake                                
         0 мс вызовов   1 MakeDirsForXdcMake                      
         0 мс вызовов   1 ComputeCLCompileGeneratedXDCFiles       
-        0 мс вызовов   1 _ClCompile                              
+        0 мс вызовов   1 ResolvedXDCMake                         
+        0 мс вызовов   1 CreateSatelliteAssemblies               
         0 мс вызовов   1 AfterClCompile                          
         0 мс вызовов   1 Build                                   
-        0 мс вызовов   1 SelectClCompile                         
+        0 мс вызовов   1 ResolveReferences                       
+        0 мс вызовов   1 _PrepareForReferenceResolution          
         0 мс вызовов   1 SelectCustomBuild                       
         0 мс вызовов   1 _SelectedFiles                          
-        0 мс вызовов   1 PreBuildEvent                           
+        0 мс вызовов   1 BeforeResolveReferences                 
         0 мс вызовов   1 BeforeBuildGenerateSources              
-        0 мс вызовов   1 ResolveReferences                       
+        0 мс вызовов   1 BuildGenerateSourcesTraverse            
+        0 мс вызовов   1 _AddOutputPathToGlobalPropertiesToRemove
+        0 мс вызовов   1 MakeDirsForCl                           
         0 мс вызовов   1 AfterResolveReferences                  
+        0 мс вызовов   1 ResolveAssemblyReferences               
         0 мс вызовов   1 ExpandSDKReferences                     
         0 мс вызовов   1 ResolveSDKReferences                    
         0 мс вызовов   1 SetCABuildNativeEnvironmentVariables    
-        0 мс вызовов   1 _CheckWindowsSDKInstalled               
-        0 мс вызовов   1 GetResolvedWinMD                        
-        0 мс вызовов   1 GetReferenceAssemblyPaths               
-        0 мс вызовов   1 GetFrameworkPaths                       
         0 мс вызовов   1 PrepareProjectReferences                
-        0 мс вызовов   1 _GetProjectReferenceTargetFrameworkProperties
-        0 мс вызовов   1 _AddOutputPathToGlobalPropertiesToRemove
-        0 мс вызовов   1 _SplitProjectReferencesByFileExistence  
-        0 мс вызовов   1 AssignProjectConfiguration              
-        0 мс вызовов   1 BeforeResolveReferences                 
-        0 мс вызовов   1 _PrepareForReferenceResolution          
-        0 мс вызовов   1 _PrepareForBuild                        
-        0 мс вызовов   1 ComputeCustomBuildOutput                
+        0 мс вызовов   1 GetResolvedWinMD                        
+        0 мс вызовов   1 ResolveProjectReferences                
+        0 мс вызовов   1 AddExternalIncludDirectoriesToPaths     
         0 мс вызовов   1 CopyFileToFolders                       
-        0 мс вызовов   1 BuildGenerateSourcesTraverse            
-        0 мс вызовов   1 _Midl                                   
         0 мс вызовов   1 _Xsd                                    
-        0 мс вызовов   1 MakeDirsForCl                           
-        0 мс вызовов   1 BeforeClCompile                         
-        0 мс вызовов   1 ComputeCLInputPDBName                   
-        0 мс вызовов   1 ComputeMIDLGeneratedCompileInputs       
-        0 мс вызовов   1 GetReferencedVCProjectsInfo             
-        0 мс вызовов   1 AfterMidl                               
-        0 мс вызовов   1 FindReferenceAssembliesForReferences    
+        0 мс вызовов   1 ComputeCustomBuildOutput                
         0 мс вызовов   1 BuildGenerateSources                    
+        0 мс вызовов   1 GetReferencedVCProjectsInfo             
+        0 мс вызовов   1 FindReferenceAssembliesForReferences    
+        0 мс вызовов   1 ComputeCLInputPDBName                   
+        0 мс вызовов   1 BeforeClCompile                         
+        0 мс вызовов   1 BuildCompileTraverse                    
+        0 мс вызовов   1 MakeDirsForMidl                         
         0 мс вызовов   1 _BuildGenerateSourcesAction             
-        0 мс вызовов   1 AfterBuildGenerateSources               
         0 мс вызовов   1 AfterBuildGenerateSourcesEvent          
-        1 мс вызовов   1 CreateRecipeFile                        
-        1 мс вызовов   1 ComputeManifestGeneratedLinkerInputs    
-        1 мс вызовов   1 MakeDirsForResourceCompile              
-        1 мс вызовов   1 GetCopyToOutputDirectoryItems           
-        1 мс вызовов   1 _GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences
-        1 мс вызовов   1 BuildCompileTraverse                    
-        1 мс вызовов   1 ResolveProjectReferences                
-        1 мс вызовов   1 MakeDirsForLink                         
-        1 мс вызовов   1 MakeDirsForMidl                         
-        1 мс вызовов   1 _CheckForInvalidConfigurationAndPlatform
-        1 мс вызовов   1 ResolveAssemblyReferences               
-        1 мс вызовов   1 SetBuildDefaultEnvironmentVariables     
-        1 мс вызовов   1 ComputeReferenceCLInput                 
-        1 мс вызовов   1 AssignTargetPaths                       
-        1 мс вызовов   1 AddExternalIncludDirectoriesToPaths     
-        1 мс вызовов   1 SetTelemetryEnvironmentVariables        
+        0 мс вызовов   1 GetFrameworkPaths                       
+        0 мс вызовов   1 AfterBuildGenerateSources               
+        0 мс вызовов   1 _Midl                                   
+        0 мс вызовов   1 AfterMidl                               
+        0 мс вызовов   1 ComputeMIDLGeneratedCompileInputs       
         1 мс вызовов   1 _CleanGetCurrentAndPriorFileWrites      
-        1 мс вызовов   1 _GenerateSatelliteAssemblyInputs        
-        1 мс вызовов   1 ComputeLinkImportLibraryOutputsForClean 
-        1 мс вызовов   1 FinalizeBuildStatus                     
-        1 мс вызовов   1 MakeDirsForFxc                          
-        2 мс вызовов   1 InitializeBuildStatus                   
-        2 мс вызовов   1 FixupCLCompileOptions                   
-        2 мс вызовов   1 ContentFilesProjectOutputGroup          
+        1 мс вызовов   1 ComputeCLOutputs                        
+        1 мс вызовов   1 SetTelemetryEnvironmentVariables        
+        1 мс вызовов   1 AssignTargetPaths                       
+        1 мс вызовов   1 MakeDirsForLink                         
+        1 мс вызовов   1 IncrementalClean                        
+        1 мс вызовов   1 _SplitProjectReferencesByFileExistence  
+        1 мс вызовов   1 CreateRecipeFile                        
+        1 мс вызовов   1 ComputeReferenceCLInput                 
+        1 мс вызовов   1 _PrepareForBuild                        
+        1 мс вызовов   1 _GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences
+        1 мс вызовов   1 GetCopyToOutputDirectoryItems           
+        1 мс вызовов   1 RegisterOutput                          
+        1 мс вызовов   1 PreBuildEvent                           
+        1 мс вызовов   1 SelectClCompile                         
+        1 мс вызовов   1 BuiltProjectOutputGroup                 
+        1 мс вызовов   1 _GetProjectReferenceTargetFrameworkProperties
+        1 мс вызовов   1 GetCopyToOutputDirectoryXamlAppDefs     
+        1 мс вызовов   1 FixupCLCompileOptions                   
+        1 мс вызовов   1 GetReferenceAssemblyPaths               
+        1 мс вызовов   1 AssignProjectConfiguration              
+        1 мс вызовов   1 _CheckWindowsSDKInstalled               
+        1 мс вызовов   1 ComputeLinkSwitches                     
+        1 мс вызовов   1 ComputeLegacyManifestEmbedding          
+        1 мс вызовов   1 CopyFilesToOutputDirectory              
+        2 мс вызовов   1 SetBuildDefaultEnvironmentVariables     
+        2 мс вызовов   1 CustomBuild                             
         3 мс вызовов   1 PrepareForBuild                         
-        3 мс вызовов   1 CustomBuild                             
-        5 мс вызовов   1 WarnCompileDuplicatedFilename           
-      386 мс вызовов   1 Link                                    
-      928 мс вызовов   1 ClCompile                               
+        3 мс вызовов   1 _CheckForInvalidConfigurationAndPlatform
+        3 мс вызовов   1 _GenerateSatelliteAssemblyInputs        
+        4 мс вызовов   1 InitializeBuildStatus                   
+        6 мс вызовов   1 WarnCompileDuplicatedFilename           
+      282 мс вызовов   1 Link                                    
+      968 мс вызовов   1 ClCompile                               
 
 Итоги по задачам:
         0 мс вызовов   3 Message                                 
@@ -168,17 +168,17 @@ D:\C++ Projects\Work\Checkers\Checkers\DataStructures.h(910): warning C4172: в�
         0 мс вызовов   1 GenerateDesktopDeployRecipe             
         0 мс вызовов   1 AssignCulture                           
         0 мс вызовов   2 RemoveDuplicates                        
-        0 мс вызовов   1 WriteLinesToFile                        
-        0 мс вызовов   2 Delete                                  
+        0 мс вызовов   3 GetOutOfDateItems                       
         0 мс вызовов   1 CheckVCToolsetVersion                   
+        0 мс вызовов  10 MakeDir                                 
         0 мс вызовов   1 MSBuild                                 
         0 мс вызовов   1 AssignProjectConfiguration              
-        0 мс вызовов   2 ReadLinesFromFile                       
-        1 мс вызовов   3 GetOutOfDateItems                       
+        1 мс вызовов   2 Delete                                  
+        1 мс вызовов   2 ReadLinesFromFile                       
         1 мс вызовов   2 CallTarget                              
-        1 мс вызовов  10 MakeDir                                 
+        1 мс вызовов   9 SetEnv                                  
+        1 мс вызовов   1 WriteLinesToFile                        
         2 мс вызовов   7 AssignTargetPath                        
-        2 мс вызовов   9 SetEnv                                  
         2 мс вызовов   2 Touch                                   
-      384 мс вызовов   1 Link                                    
-      924 мс вызовов   2 CL                                      
+      281 мс вызовов   1 Link                                    
+      965 мс вызовов   2 CL                                      

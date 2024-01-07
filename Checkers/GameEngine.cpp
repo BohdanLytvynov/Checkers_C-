@@ -1842,9 +1842,9 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 	m_boardHeight = 8 * Cellheight;
 
 	//Initialize AI Module
-
-	m_ai->Initialize_AI_Variables(m_boardWidth, m_boardHeight, m_Board_position, m_checkers,
-		m_board, Cellheight);
+	if(m_use_AI)
+		m_ai->Initialize_AI_Variables(m_boardWidth, m_boardHeight, m_Board_position, m_checkers,
+			m_board, Cellheight);
 }
 
 game_engine_core::GameController::~GameController()
@@ -1865,7 +1865,8 @@ game_engine_core::GameController::~GameController()
 
 void game_engine_core::GameController::SetDifficulty(const game_engine_core::ai_modules::difficulty_level& diff)
 {
-	m_ai->Set_Difficulty(diff);
+	if(m_use_AI)
+		m_ai->Set_Difficulty(diff);
 }
 
 void game_engine_core::GameController::HighLightPossibleTurns(bool whiteBlack)
