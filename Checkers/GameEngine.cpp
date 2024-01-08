@@ -1074,16 +1074,12 @@ void game_engine_core::Main_Game_logic::FindPossibleTurns(bool whiteBlack, std::
 	{		
 		m_selectedChecker = FindCheckerUsingPosition(m_selectedRouts[(size_t)0]->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT),
 			m_checkers, m_checkersCount);
+		
+		m_selectedRouts.RemoveNode(m_selectedRouts[(size_t)0]);
+
+		return;
 	}
-
-	m_multipleTakes = -1;
-
-	m_possibleTurns.Clear();
-
-	m_checkersToBeKilled.Clear();
-
-	m_selectedRouts.Clear();
-
+	
 	Vector<short> pos = m_selectedChecker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
 	bool CallBack = false;
@@ -1098,6 +1094,17 @@ void game_engine_core::Main_Game_logic::FindPossibleTurns(bool whiteBlack, std::
 	{
 		FindPossibleTurnRecursive(m_selectedChecker, pos, pos, m_checkers, m_checkersCount, Vector<short>(), false, func);
 	}
+}
+
+void game_engine_core::Main_Game_logic::Reset_Game_Logic_State()
+{
+	m_multipleTakes = -1;
+
+	m_possibleTurns.Clear();
+
+	m_checkersToBeKilled.Clear();
+
+	m_selectedRouts.Clear();
 }
 
 #pragma region Static Definitions
@@ -1298,7 +1305,12 @@ linear_data_structures::single_linked_list<vector_math::Vector<short>>& game_eng
 
 void game_engine_core::ai_modules::checker_ai::Clear_Selected_Route_Coords()
 {
-	m_Selected_Route_Coords.Clear();
+	m_Selected_Route_Coords.Clear();	
+}
+
+void game_engine_core::ai_modules::checker_ai::ClearPossible_Calculated_Turns()
+{
+	m_Possible_Calculated_Turns.Clear();
 }
 
 size_t game_engine_core::ai_modules::checker_ai::GetMaxTakesCount()
@@ -1308,7 +1320,9 @@ size_t game_engine_core::ai_modules::checker_ai::GetMaxTakesCount()
 
 void game_engine_core::ai_modules::checker_ai::Reset_Data()
 {
-	
+	this->Clear_Selected_Route_Coords();
+
+	this->ClearPossible_Calculated_Turns();
 }
 
 void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlack)
@@ -1380,10 +1394,17 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 
 			moveGraph.Clear();
 
+			m_checkersToBeKilled.Clear();
+
 			continue;
 		}
 
 		turn<Vector<short>> current_turn = turn<Vector<short>>(start_Vertex);
+
+		if (m_checkersToBeKilled.GetCount() > 0)
+		{
+			current_turn.
+		}
 
 		auto prev_visit_dictionary = moveGraph.generate_prev_dictionary(Vector<short>());
 
@@ -1438,6 +1459,10 @@ void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlac
 		}
 
 		startDetected = false;
+
+		moveGraph.Clear();
+
+		m_checkersToBeKilled.Clear();
 
 #pragma region Commented
 		//if (m_checkersToBeKilled.GetCount() > 0)//Attack is possible
@@ -1941,12 +1966,12 @@ void game_engine_core::GameController::DeselectAllGameObjects()
 	m_selectedRouts.Iterate([cboptr](Cell* cell) -> bool { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() :
 		cboptr->GetBlackColor());
 	return true;
-		});
+		});	
 }
 
 void game_engine_core::GameController::Move()
 {
-	size_t selRoutsCount = m_selectedRouts.GetCount();
+	size_t selRoutsCount = this->m_selectedRouts.GetCount();
 
 	auto chToBeKilledPtr = &m_checkersToBeKilled;
 
@@ -1955,7 +1980,7 @@ void game_engine_core::GameController::Move()
 	const auto& boardWidth = m_boardWidth;
 
 	Checker* selCheckerPtr = m_selectedChecker;
-
+	
 	//Fighting
 
 	//Ordinary fightting
@@ -1968,7 +1993,7 @@ void game_engine_core::GameController::Move()
 			auto MoveDir = Sel_pos - selCheckerPtr->GetPosition();
 			//Move selected checker to selected cell position
 			selCheckerPtr->SetPosition(Sel_pos);
-
+			
 			if (chToBeKilledPtr->isEmpty())
 			{
 				return false;
@@ -2238,13 +2263,13 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 		m_ai->Get_Selected_Route_Coords().Iterate(
 			[this](Vector<short> elem)->bool
 			{
-				m_selectedRouts.AddToTheEnd(this->FindCellUsingPosition(elem));
+				this->m_selectedRouts.AddToTheEnd(this->FindCellUsingPosition(elem));
 
 				return true;
 			}
 		);;
-		
-		m_ai->Clear_Selected_Route_Coords();
+						
+		m_ai->Reset_Data();
 		
 		return;
 	}

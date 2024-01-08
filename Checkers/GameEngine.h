@@ -331,7 +331,7 @@ namespace game_engine_core
 
 		void DrawCheckers(Checker* checkers, size_t checkers_count);
 
-
+		void Reset_Game_Logic_State();
 
 #pragma region Checker Board
 			
@@ -482,6 +482,8 @@ namespace game_engine_core
 			size_t m_eur_value;
 
 			bool m_mini_max_used;
+
+			linear_data_structures::single_linked_list<Vector<short>> m_CheckersToBeKilledCoords;
 		};
 
 		template<class T>
@@ -513,6 +515,8 @@ namespace game_engine_core
 
 			void Clear_Selected_Route_Coords();
 
+			void ClearPossible_Calculated_Turns();
+
 			size_t GetMaxTakesCount();
 
 			void Reset_Data();
@@ -535,6 +539,8 @@ namespace game_engine_core
 			linear_data_structures::single_linked_list<turn<Vector<short>>> m_Possible_Calculated_Turns;
 			
 			linear_data_structures::single_linked_list<Vector<short>> m_Selected_Route_Coords;
+
+			linear_data_structures::single_linked_list<Vector<short>> m_CheckersToBeKilledCoords;
 
 			int m_id_of_max_takes;
 

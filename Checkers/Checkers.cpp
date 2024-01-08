@@ -62,7 +62,7 @@ int main()
 	ai_modules::checker_ai* ai = new ai_modules::checker_ai(cgu);
 
 	game_engine_core::GameController* gc = GameController::Initialize(cgu, CheckerBoardPosition,
-		&cellOpt, &checkOpt, nullptr);
+		&cellOpt, &checkOpt, ai);
 	
 	char input;
 
@@ -73,7 +73,7 @@ int main()
 	string pl2;
     
 	bool start = false;
-
+	
 #pragma endregion
 
 #pragma region DoubledLinked List
@@ -279,6 +279,8 @@ int main()
 				gc->Move();
 
 				gc->DeselectAllGameObjects();
+
+				gc->Reset_Game_Logic_State();
 
 				whiteBlack = !whiteBlack;
 			} while (!gc->IsGameOver(whiteBlack_Winner));

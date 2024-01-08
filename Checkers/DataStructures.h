@@ -1039,7 +1039,7 @@ namespace nonlinear_data_structures
 
 			m_verteces->Iterate([&prev, default_Value](Tkey vertex)->bool
 				{
-					prev[vertex] = default_Value;
+					prev.emplace(vertex, default_Value);
 
 					return true;
 				});
@@ -1157,6 +1157,11 @@ namespace nonlinear_data_structures
 				for (Tkey current = end; current != emptyValue; current = prev_Dictionary[current])
 				{
 					temp.AddToTheEnd(current);
+
+					if (current == start)
+					{
+						break;
+					}
 				}
 
 				//Reverse
