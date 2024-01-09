@@ -579,7 +579,7 @@ namespace linear_data_structures
 			node<T>* temp = m_head;
 
 			while (temp != nullptr)
-			{
+			{				
 				if (!func(temp->GetData()))
 				{
 					break;

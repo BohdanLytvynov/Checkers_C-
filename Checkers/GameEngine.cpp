@@ -633,9 +633,7 @@ game_engine_core::Main_Game_logic::Main_Game_logic(console_graphics_utility* cgu
 {}
 
 game_engine_core::Cell* game_engine_core::Main_Game_logic::FindCellUsingPosition(const Vector<short>& positionVector)
-{
-	bool stop = false;
-
+{	
 	Vector<short> pos;
 
 	for (size_t i = 0; i < 8; i++)
@@ -1375,9 +1373,13 @@ game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core:
 
 			bool multikill_temp = false;
 
+			Vector<short> Kill1position;
+
+			bool Kill1 = false;
+
 			//Try to build graph of possible moves of one checker
 			this->FindPossibleTurns(true, [&start_Point_Temp, &moveGraph, &multikill_temp,
-				&startDetected, &start_Vertex]
+				&startDetected, &start_Vertex, &Kill1, &Kill1position]
 			(Vector<short> prev_position, Vector<short> current_Pos, bool multikill)
 				{
 					if (!startDetected)
@@ -1398,7 +1400,7 @@ game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core:
 					{
 						start_Point_Temp = prev_position;
 
-						multikill_temp = multikill;
+						multikill_temp = multikill;						
 					}
 
 					if (prev_position == current_Pos)
@@ -1407,6 +1409,13 @@ game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core:
 					}
 					else
 					{
+						if (!Kill1)
+						{
+							Kill1position = current_Pos;
+
+							Kill1 = true;
+						}
+
 						moveGraph.AddEdge(edge<Vector<short>>(start_Point_Temp, current_Pos));
 					}
 				});
@@ -1423,6 +1432,8 @@ game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core:
 			}
 
 			turn<Vector<short>> current_turn = turn<Vector<short>>(start_Vertex);
+
+			current_turn.SetFirstKillPosition(Kill1position);
 
 			m_checkersToBeKilled.Iterate(
 				[&current_turn](Checker* elem)->bool
@@ -1492,6 +1503,10 @@ game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core:
 			startDetected = false;
 
 			moveGraph.Clear();
+
+			Kill1position = Vector<short>();
+
+			Kill1 = false;
 
 			m_checkersToBeKilled.Clear();
 
@@ -1906,6 +1921,8 @@ void game_engine_core::GameController::HighLightPossibleTurns(bool whiteBlack)
 {
 	if (Main_Game_logic::m_use_AI && !whiteBlack)
 	{
+		m_selectedChecker->Focus();
+
 		m_selectedRouts.Iterate([](Cell* ptr)->bool { ptr->HighlightBorder(); return true; });
 
 		//return;
@@ -2288,7 +2305,7 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 
 		std::vector<Vector<short>> path; 
 
-		if (sel_turn.GetTakesCount() > 0)//need to find the longest path for attacking sequence
+		if (sel_turn.GetTakesCount() > 1)//need to find the longest path for attacking sequence
 		{			
 			size_t length_current = 0;
 			
@@ -2324,7 +2341,12 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 				i++;
 			}
 		}
-		else
+		else if(sel_turn.GetTakesCount() == 1)//Count of takes 1
+		{
+			path = shortest_path_problem<Vector<short>>::reconstruct_path(sel_turn.GetStart(),
+				sel_turn.GetFirstKillPosition(), prev, Vector<short>());
+		}
+		else//No takes select move randomly
 		{
 			path = shortest_path_problem<Vector<short>>::reconstruct_path(sel_turn.GetStart(),
 				sel_turn.GetEndPoints()[std::rand() % end_point_count], prev, Vector<short>());			
@@ -2349,7 +2371,7 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 
 		m_ai->Reset_Data();
 
-		return;
+ 		return;
 	}
 
 	if (m_selectedChecker != nullptr)

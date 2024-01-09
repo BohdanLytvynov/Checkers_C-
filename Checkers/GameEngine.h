@@ -412,6 +412,8 @@ namespace game_engine_core
 				this->m_start = other.m_start;
 
 				this->m_Takes = other.m_Takes;
+
+				this->m_1KillPosition = other.m_1KillPosition;
 			}
 
 			turn<T>& operator = (const turn<T>& other)
@@ -432,11 +434,23 @@ namespace game_engine_core
 
 				this->m_Takes = other.m_Takes;
 
+				this->m_1KillPosition = other.m_1KillPosition;
+
 				return *this;
 			}
 
 			~turn() { m_ends.clear(); m_CheckersToBeKilledCoords.Clear(); }
 			
+			Vector<short> GetFirstKillPosition()
+			{
+				return m_1KillPosition;
+			}
+
+			void SetFirstKillPosition(Vector<short> first_kill_Position)
+			{
+				m_1KillPosition = first_kill_Position;
+			}
+
 			void AddEnd(T end)
 			{
 				m_ends.push_back(end);
@@ -536,6 +550,8 @@ namespace game_engine_core
 			bool m_mini_max_used;
 
 			linear_data_structures::single_linked_list<T> m_CheckersToBeKilledCoords;
+
+			Vector<short> m_1KillPosition;
 		};
 
 		template<class T>
