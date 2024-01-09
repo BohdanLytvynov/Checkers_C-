@@ -393,11 +393,58 @@ namespace game_engine_core
 			turn(T start) : m_start(start), m_Takes(0), m_eur_value(0), m_mini_max_used(false) 
 			{ m_current_id = m_id++; }
 
-			~turn() { m_ends.clear(); }
+			turn() {}
 
+			turn(const turn<T>& other)
+			{
+				this->m_current_id = other.m_current_id;
+
+				this->m_CheckersToBeKilledCoords = other.m_CheckersToBeKilledCoords;
+
+				this->m_ends = other.m_ends;
+
+				this->m_eur_value = other.m_eur_value;
+
+				this->m_mini_max_used = other.m_mini_max_used;
+
+				this->m_prev_dictionary = other.m_prev_dictionary;
+
+				this->m_start = other.m_start;
+
+				this->m_Takes = other.m_Takes;
+			}
+
+			turn<T>& operator = (const turn<T>& other)
+			{
+				this->m_current_id = other.m_current_id;
+
+				this->m_CheckersToBeKilledCoords = other.m_CheckersToBeKilledCoords;
+
+				this->m_ends = other.m_ends;
+
+				this->m_eur_value = other.m_eur_value;
+
+				this->m_mini_max_used = other.m_mini_max_used;
+
+				this->m_prev_dictionary = other.m_prev_dictionary;
+
+				this->m_start = other.m_start;
+
+				this->m_Takes = other.m_Takes;
+
+				return *this;
+			}
+
+			~turn() { m_ends.clear(); m_CheckersToBeKilledCoords.Clear(); }
+			
 			void AddEnd(T end)
 			{
 				m_ends.push_back(end);
+			}
+
+			void AddCheckerToBeKilled_Coord(T checker_for_kill_Coord)
+			{
+				m_CheckersToBeKilledCoords.AddToTheEnd(checker_for_kill_Coord);
 			}
 
 			void Set_Prev_Dictionary(const std::map<T, T>& prev_dictionary)
@@ -451,6 +498,11 @@ namespace game_engine_core
 			{
 				return m_start;
 			}
+
+			const linear_data_structures::single_linked_list<T>& GetCheckersToBeKilled_Coord() const
+			{
+				return m_CheckersToBeKilledCoords;
+			}
 #pragma region Operators
 
 			bool operator == (const turn<T>& other)const
@@ -483,7 +535,7 @@ namespace game_engine_core
 
 			bool m_mini_max_used;
 
-			linear_data_structures::single_linked_list<Vector<short>> m_CheckersToBeKilledCoords;
+			linear_data_structures::single_linked_list<T> m_CheckersToBeKilledCoords;
 		};
 
 		template<class T>
@@ -498,7 +550,7 @@ namespace game_engine_core
 				Vector<ushort> board_Position, Checker* checkers, Cell** board,
 				ushort Cell_height);
 #pragma endregion
-			void SelectPossibleMove(bool whiteBlack);
+			game_engine_core::ai_modules::turn<vector_math::Vector<short>> SelectPossibleTurn(bool whiteBlack);
 			
 			Checker* DeepBoardCopy(Checker* checkers, size_t checkers_countcount);
 
@@ -510,11 +562,7 @@ namespace game_engine_core
 			int FindEuristicValue(Checker* board);
 
 			void Set_Difficulty(const difficulty_level& diff);
-			
-			linear_data_structures::single_linked_list<Vector<short>>& Get_Selected_Route_Coords();
-
-			void Clear_Selected_Route_Coords();
-
+						
 			void ClearPossible_Calculated_Turns();
 
 			size_t GetMaxTakesCount();
@@ -529,17 +577,13 @@ namespace game_engine_core
 			nonlinear_data_structures::edge_list_graph<Vector<ushort>> m_game_tree;
 
 			linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Vector<short>, int>> m_eur_ValueTable;
-
-			std::vector<linear_data_structures::key_value_pair<Vector<short>, Vector<short>>> m_PrevDictionary;
-
+			
 			ushort m_Cell_Height;
 
 			Vector<ushort> m_Prev_Checker_Temp;
 
 			linear_data_structures::single_linked_list<turn<Vector<short>>> m_Possible_Calculated_Turns;
-			
-			linear_data_structures::single_linked_list<Vector<short>> m_Selected_Route_Coords;
-
+						
 			linear_data_structures::single_linked_list<Vector<short>> m_CheckersToBeKilledCoords;
 
 			int m_id_of_max_takes;

@@ -537,9 +537,28 @@ namespace linear_data_structures
 	{
 		single_linked_list() :m_head(nullptr), m_count(0) {}
 
-		single_linked_list(const single_linked_list& other) = delete;
+		single_linked_list(const single_linked_list& other)
+		{
+			other.Iterate(
+				[this](const T& elem)->bool
+				{
+					AddToTheEnd(elem);
+					return true;
+				}
+			);
+		}
 
-		single_linked_list& operator = (const single_linked_list& other) = delete;
+		single_linked_list& operator = (const single_linked_list& other)
+		{
+			other.Iterate(
+				[this](const T& elem)->bool
+				{
+					AddToTheEnd(elem);
+					return true;
+				}
+			);
+			return *this;
+		}
 
 		virtual void AddToTheBegining(T value) {
 			node<T>* newNode = new node<T>(value);
@@ -551,6 +570,33 @@ namespace linear_data_structures
 
 		virtual void Iterate(std::function<bool(T)> func)
 		{
+			if (m_head == nullptr)			
+				return;
+			
+			if (m_count == 0)			
+				return;			
+
+			node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (!func(temp->GetData()))
+				{
+					break;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+		}
+
+		virtual void Iterate(std::function<bool(const T&)> func) const
+		{
+			if (m_head == nullptr)
+				return;
+
+			if (m_count == 0)
+				return;
+
 			node<T>* temp = m_head;
 
 			while (temp != nullptr)
@@ -566,7 +612,7 @@ namespace linear_data_structures
 
 
 		// Function to insert a new node at the end of the list
-		virtual void AddToTheEnd(T value) {
+		virtual void AddToTheEnd(const T& value) {
 			node<T>* newNode = new node<T>(value);
 			if (m_head == nullptr) {
 				m_head = newNode;
@@ -655,7 +701,9 @@ namespace linear_data_structures
 
 		// Destructor to deallocate memory
 		virtual ~single_linked_list() {
-			Clear();
+
+			if(m_head != nullptr)
+				Clear();
 		}
 
 		size_t GetCount()

@@ -1,5 +1,6 @@
 #include"pch.h"
 #include"GameEngine.h"
+#include<queue>
 
 #pragma region GameObject definitions
 
@@ -1012,7 +1013,7 @@ void game_engine_core::Main_Game_logic::FindPossibleTurnRecursive(
 
 					if (func != nullptr)
 					{
-						func(posBehind, current_position, multiKill);
+						func(prev_position, posBehind, multiKill);
 					}
 
 					//Posibility of multiKill
@@ -1068,18 +1069,18 @@ bool game_engine_core::Main_Game_logic::IsAllPossibleTurnsSelected()
 	return result;
 }
 
-void game_engine_core::Main_Game_logic::FindPossibleTurns(bool whiteBlack, std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func)	
+void game_engine_core::Main_Game_logic::FindPossibleTurns(bool whiteBlack, std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func)
 {
-	if (Main_Game_logic::m_use_AI  && m_selectedRouts.GetCount()>0 && !whiteBlack)
-	{		
+	if (Main_Game_logic::m_use_AI && m_selectedRouts.GetCount() > 0 && !whiteBlack)
+	{
 		m_selectedChecker = FindCheckerUsingPosition(m_selectedRouts[(size_t)0]->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT),
 			m_checkers, m_checkersCount);
-		
+
 		m_selectedRouts.RemoveNode(m_selectedRouts[(size_t)0]);
 
 		return;
 	}
-	
+
 	Vector<short> pos = m_selectedChecker->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT);
 
 	bool CallBack = false;
@@ -1298,16 +1299,6 @@ int game_engine_core::ai_modules::checker_ai::FindEuristicValue(Checker* board)
 	return BlackCount - WhiteCount;
 }
 
-linear_data_structures::single_linked_list<vector_math::Vector<short>>& game_engine_core::ai_modules::checker_ai::Get_Selected_Route_Coords()
-{
-	return m_Selected_Route_Coords;
-}
-
-void game_engine_core::ai_modules::checker_ai::Clear_Selected_Route_Coords()
-{
-	m_Selected_Route_Coords.Clear();	
-}
-
 void game_engine_core::ai_modules::checker_ai::ClearPossible_Calculated_Turns()
 {
 	m_Possible_Calculated_Turns.Clear();
@@ -1320,263 +1311,280 @@ size_t game_engine_core::ai_modules::checker_ai::GetMaxTakesCount()
 
 void game_engine_core::ai_modules::checker_ai::Reset_Data()
 {
-	this->Clear_Selected_Route_Coords();
-
 	this->ClearPossible_Calculated_Turns();
+
+	this->m_id_of_max_takes = -1;
+
+	this->m_max_takes = 0;
 }
 
-void game_engine_core::ai_modules::checker_ai::SelectPossibleMove(bool whiteBlack)
+game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core::ai_modules::checker_ai::SelectPossibleTurn(bool whiteBlack)
 {
+	bool ai_checker = true;
+
+	game_engine_core::ai_modules::turn<vector_math::Vector<short>> result;
+
 	if (whiteBlack)
 	{
-		return;
-	}
-	
-	using namespace nonlinear_data_structures;
-
-	using namespace nonlinear_data_structures::graph_math;
-
-	using namespace vector_math;
-
-	using namespace::game_engine_core::ai_modules;
-
-	auto board = this->DeepBoardCopy(m_checkers, m_checkersCount);
-
-	size_t start;
-	size_t end;
-	size_t mid = (m_checkersCount - 1) / 2;
-
-	if (!whiteBlack)//Black checkers calculations
-	{
-		start = 0;
-
-		end = mid;
+		ai_checker = false;
 	}
 
-	Vector<short> start_Point_Temp;
-
-	Vector<short> start_Vertex;
-
-	bool startDetected = false;
-
-	edge_list_graph<Vector<short>> moveGraph;
-
-	for (size_t i = start; i <= end; i++)
+	if (ai_checker)
 	{
-		//Pre examination analizer
+		using namespace nonlinear_data_structures;
+		
+		using namespace vector_math;
 
-		m_selectedChecker = m_checkers + i;
+		using namespace::game_engine_core::ai_modules;
 
-		//Try to build graph of possible moves of one checker
-		this->FindPossibleTurns(true, [&start_Point_Temp, &moveGraph, &startDetected, &start_Vertex]
-		(Vector<short> prev_position, Vector<short> current_Pos, bool multikill)
-			{
-				if (!startDetected)
-				{
-					start_Vertex = prev_position;
+		auto board = this->DeepBoardCopy(m_checkers, m_checkersCount);
 
-					startDetected = true;
-				}
+		size_t start;
+		size_t end;
+		size_t mid = (m_checkersCount - 1) / 2;
 
-				if (prev_position == current_Pos)
-				{
-					start_Point_Temp = prev_position;
-				}
-				else
-				{
-					moveGraph.AddEdge(edge<Vector<short>>(start_Point_Temp, current_Pos));
-				}
-			});
-
-		if (moveGraph.isEmpty())
+		if (!whiteBlack)//Black checkers calculations
 		{
+			start = 0;
+
+			end = mid;
+		}
+
+		Vector<short> start_Point_Temp;
+
+		Vector<short> start_Vertex;
+
+		bool startDetected = false;
+
+		bool take_sequence = false;
+
+		edge_list_graph<Vector<short>> moveGraph;
+
+		for (size_t i = start; i <= end; i++)
+		{
+			//Pre examination analizer
+
+			m_selectedChecker = m_checkers + i;
+
+			if (!m_selectedChecker->isAlive())
+			{
+				continue;
+			}
+
+			m_console_graphics_utility->SetCursorPosition(m_selectedChecker->GetPosition());
+
+			bool multikill_temp = false;
+
+			//Try to build graph of possible moves of one checker
+			this->FindPossibleTurns(true, [&start_Point_Temp, &moveGraph, &multikill_temp,
+				&startDetected, &start_Vertex]
+			(Vector<short> prev_position, Vector<short> current_Pos, bool multikill)
+				{
+					if (!startDetected)
+					{
+						start_Vertex = prev_position;
+
+						startDetected = true;
+					}
+								
+					if (multikill)
+					{
+						start_Point_Temp = prev_position;
+
+						multikill_temp = multikill;
+					}
+
+					if (multikill != multikill_temp)
+					{
+						start_Point_Temp = prev_position;
+
+						multikill_temp = multikill;
+					}
+
+					if (prev_position == current_Pos)
+					{
+						start_Point_Temp = prev_position;
+					}
+					else
+					{
+						moveGraph.AddEdge(edge<Vector<short>>(start_Point_Temp, current_Pos));
+					}
+				});
+
+			if (moveGraph.isEmpty())
+			{
+				startDetected = false;
+
+				moveGraph.Clear();
+
+				m_checkersToBeKilled.Clear();
+
+				continue;
+			}
+
+			turn<Vector<short>> current_turn = turn<Vector<short>>(start_Vertex);
+
+			m_checkersToBeKilled.Iterate(
+				[&current_turn](Checker* elem)->bool
+				{
+					current_turn.AddCheckerToBeKilled_Coord(elem->GetPosition().Convert_To(value_convertion::Converters::USHORT_TO_SHORT));
+
+					return true;
+				}
+			);
+
+			//current_turn.Set_CountOfTakes(m_checkersToBeKilled.GetCount());
+
+			auto prev_visit_dictionary = moveGraph.generate_prev_dictionary(Vector<short>());
+
+			moveGraph.depth_first_search(start_Vertex,
+				[&prev_visit_dictionary, &current_turn](Vector<short> prev, Vector<short> current, std::map<Vector<short>, bool> v_d, bool isEnd)->bool
+				{
+					prev_visit_dictionary[current] = prev;
+
+					if (isEnd)//End of current graph found
+					{
+						current_turn.AddEnd(current);
+					}
+
+					return true;
+				});
+
+			current_turn.Set_Prev_Dictionary(prev_visit_dictionary);
+
+			if (m_checkersToBeKilled.GetCount() != 0)//Some possible takes detected
+			{
+				size_t current_count_of_takes = m_checkersToBeKilled.GetCount();
+
+				current_turn.Set_CountOfTakes(current_count_of_takes);
+
+				if (current_count_of_takes > m_max_takes)
+				{
+					m_id_of_max_takes = current_turn.Getid();
+
+					m_max_takes = current_count_of_takes;
+				}
+
+				m_Possible_Calculated_Turns.AddToTheEnd(current_turn);
+			}
+			else//Possible takes not detected
+			{
+				switch (m_difficulty)
+				{
+				case game_engine_core::ai_modules::easy:
+
+					m_Possible_Calculated_Turns.AddToTheEnd(current_turn);// Write to the turn collection
+
+					break;
+				case game_engine_core::ai_modules::medium:
+
+					//Use Min_Max depth = 2
+
+					break;
+				case game_engine_core::ai_modules::hard:
+
+					//Use Min_Max depth = 3
+
+					break;
+				}
+			}
+
 			startDetected = false;
 
 			moveGraph.Clear();
 
 			m_checkersToBeKilled.Clear();
 
-			continue;
-		}
-
-		turn<Vector<short>> current_turn = turn<Vector<short>>(start_Vertex);
-
-		if (m_checkersToBeKilled.GetCount() > 0)
-		{
-			current_turn.
-		}
-
-		auto prev_visit_dictionary = moveGraph.generate_prev_dictionary(Vector<short>());
-
-		moveGraph.depth_first_search(start_Vertex,
-			[&prev_visit_dictionary, &current_turn](Vector<short> prev, Vector<short> current, std::map<Vector<short>, bool> v_d, bool isEnd)->bool
-			{
-				prev_visit_dictionary[current] = prev;
-
-				if (isEnd)//End of current graph found
-				{
-					current_turn.AddEnd(current);
-				}
-
-				return true;
-			});
-
-		current_turn.Set_Prev_Dictionary(prev_visit_dictionary);
-
-		if (m_checkersToBeKilled.GetCount() != 0)//Some possible takes detected
-		{
-			size_t current_count_of_takes = m_checkersToBeKilled.GetCount();
-
-			current_turn.Set_CountOfTakes(current_count_of_takes);
-
-			if (current_count_of_takes > m_max_takes)
-			{
-				m_id_of_max_takes = current_turn.Getid();
-			}
-
-			m_Possible_Calculated_Turns.AddToTheEnd(current_turn);
-		}
-		else//Possible takes not detected
-		{
-			switch (m_difficulty)
-			{
-			case game_engine_core::ai_modules::easy:
-
-				m_Possible_Calculated_Turns.AddToTheEnd(current_turn);// Write to the turn collection
-
-				break;
-			case game_engine_core::ai_modules::medium:
-
-				//Use Min_Max depth = 2
-
-				break;
-			case game_engine_core::ai_modules::hard:
-
-				//Use Min_Max depth = 3
-
-				break;
-			}
-		}
-
-		startDetected = false;
-
-		moveGraph.Clear();
-
-		m_checkersToBeKilled.Clear();
-
 #pragma region Commented
-		//if (m_checkersToBeKilled.GetCount() > 0)//Attack is possible
-		//{
-		//	//Check this multi kill attacking sequence
+			//if (m_checkersToBeKilled.GetCount() > 0)//Attack is possible
+			//{
+			//	//Check this multi kill attacking sequence
 
 
-		//}
-		//else//Analize using Mini Max
-		//{
-		//	/*if (m_checkersToBeKilled.GetCount() > 0)
-		//	{
-		//		m_checkersToBeKilled.Clear();
-		//	}
+			//}
+			//else//Analize using Mini Max
+			//{
+			//	/*if (m_checkersToBeKilled.GetCount() > 0)
+			//	{
+			//		m_checkersToBeKilled.Clear();
+			//	}
 
-		//	if (m_possibleTurns.GetCount() > 0)
-		//	{
-		//		m_possibleTurns.Clear();
-		//	}
+			//	if (m_possibleTurns.GetCount() > 0)
+			//	{
+			//		m_possibleTurns.Clear();
+			//	}
 
-		//	BuildGameTreeRecursive(board + i, board + i, !whiteBlack, 2, 0, board, m_checkersCount);
-		//			
-		//	system("CLS");
+			//	BuildGameTreeRecursive(board + i, board + i, !whiteBlack, 2, 0, board, m_checkersCount);
+			//			
+			//	system("CLS");
 
-		//	m_console_graphics_utility->SetCursorPosition(Vector<ushort>(0 ,0));
+			//	m_console_graphics_utility->SetCursorPosition(Vector<ushort>(0 ,0));
 
-		//	m_game_tree.For([this](nonlinear_data_structures::edge<Vector<ushort>> edge)->bool
-		//		{
-		//			auto from = edge.GetFrom();
+			//	m_game_tree.For([this](nonlinear_data_structures::edge<Vector<ushort>> edge)->bool
+			//		{
+			//			auto from = edge.GetFrom();
 
-		//			auto to = edge.GetTo();
+			//			auto to = edge.GetTo();
 
-		//			std::cout << "From: " << from << "| To:" << to << std::endl;
+			//			std::cout << "From: " << from << "| To:" << to << std::endl;
 
-		//			return true;
-		//		});
+			//			return true;
+			//		});
 
-		//	m_eur_ValueTable.Iterate([](linear_data_structures::key_value_pair<Vector<short>, int> k_v)->bool
-		//		{
-		//			auto key = k_v.GetKey();
+			//	m_eur_ValueTable.Iterate([](linear_data_structures::key_value_pair<Vector<short>, int> k_v)->bool
+			//		{
+			//			auto key = k_v.GetKey();
 
-		//			auto value = k_v.GetValue();
+			//			auto value = k_v.GetValue();
 
-		//			std::cout << "Key: " << key << "| Value:" << value << std::endl;
+			//			std::cout << "Key: " << key << "| Value:" << value << std::endl;
 
-		//			return true;
-		//		});
+			//			return true;
+			//		});
 
-		//	int a = 0;*/
+			//	int a = 0;*/
 
-		//	//Analize game tree
-		//}
+			//	//Analize game tree
+			//}
 #pragma endregion
 
-		
-	}
+		}
 
-	delete[] board;
+		delete[] board;
 
-	if (m_id_of_max_takes > 0)//Possible attacking sequence Exists
-	{
-		m_Possible_Calculated_Turns.Iterate(
-			[this](turn<Vector<short>> elem)->bool
-			{
-				if (m_id_of_max_takes == elem.Getid())
+		if (m_id_of_max_takes > 0)//Possible attacking sequence Exists
+		{
+			m_Possible_Calculated_Turns.Iterate(
+				[this, &result](turn<Vector<short>> elem)->bool
 				{
-					auto prev = elem.Get_Prev_Dictionary();
-
-					auto end_points = elem.GetEndPoints();
-
-					size_t end_point_count = end_points.size();
-
-					auto path = shortest_path_problem<Vector<short>>::reconstruct_path(elem.GetStart(),
-						elem.GetEndPoints()[std::rand() % end_point_count], prev, Vector<short>());
-
-					if (path.size() > 0)//path was found
+					if (m_id_of_max_takes == elem.Getid())
 					{
-						for (auto v : path)
-						{
-							m_Selected_Route_Coords.AddToTheEnd(v);
-						}
+						result = elem;
+
+						return false;
 					}
 
-					return false;
+					return true;
 				}
-
-				return true;
-			}
-		);
-	}
-	else// No Possible attacking sequences
-	{
-		auto turns_count = m_Possible_Calculated_Turns.GetCount();
-
-		const auto& sel_Turn = m_Possible_Calculated_Turns[std::rand() % turns_count];
-
-		const auto& prev = sel_Turn.Get_Prev_Dictionary();
-
-		const auto& end_points = sel_Turn.GetEndPoints();
-
-		size_t end_point_count = end_points.size();
-
-		const auto& path = shortest_path_problem<Vector<short>>::reconstruct_path(sel_Turn.GetStart(),
-			sel_Turn.GetEndPoints()[std::rand() % end_point_count], prev, Vector<short>());
-
-		if (path.size() > 0)//path was found
+			);
+		}
+		else// No Possible attacking sequences
 		{
-			for (auto v : path)
+			if (m_difficulty == game_engine_core::ai_modules::easy)//Select rndom turn
 			{
-				m_Selected_Route_Coords.AddToTheEnd(v);
+				auto turns_count = m_Possible_Calculated_Turns.GetCount();
+
+				result = m_Possible_Calculated_Turns[std::rand() % turns_count];
+			}
+			else
+			{
+
 			}
 		}
 	}
-	
+
+	return result;
+
 }
 
 game_engine_core::Checker* game_engine_core::ai_modules::checker_ai::DeepBoardCopy(Checker* checkers,
@@ -1867,7 +1875,7 @@ game_engine_core::GameController::GameController(console_graphics_utility* utili
 	m_boardHeight = 8 * Cellheight;
 
 	//Initialize AI Module
-	if(m_use_AI)
+	if (m_use_AI)
 		m_ai->Initialize_AI_Variables(m_boardWidth, m_boardHeight, m_Board_position, m_checkers,
 			m_board, Cellheight);
 }
@@ -1890,7 +1898,7 @@ game_engine_core::GameController::~GameController()
 
 void game_engine_core::GameController::SetDifficulty(const game_engine_core::ai_modules::difficulty_level& diff)
 {
-	if(m_use_AI)
+	if (m_use_AI)
 		m_ai->Set_Difficulty(diff);
 }
 
@@ -1898,7 +1906,9 @@ void game_engine_core::GameController::HighLightPossibleTurns(bool whiteBlack)
 {
 	if (Main_Game_logic::m_use_AI && !whiteBlack)
 	{
-		return;
+		m_selectedRouts.Iterate([](Cell* ptr)->bool { ptr->HighlightBorder(); return true; });
+
+		//return;
 	}
 
 	m_possibleTurns.Iterate([](Cell* ptr)->bool { ptr->HighlightBorder(); return true; });
@@ -1965,8 +1975,11 @@ void game_engine_core::GameController::DeselectAllGameObjects()
 
 	m_selectedRouts.Iterate([cboptr](Cell* cell) -> bool { cell->SetBackColor(cell->IsWhite() ? cboptr->GetWhiteColor() :
 		cboptr->GetBlackColor());
+
+	cell->UnHighLightBorder();
+
 	return true;
-		});	
+		});
 }
 
 void game_engine_core::GameController::Move()
@@ -1980,7 +1993,7 @@ void game_engine_core::GameController::Move()
 	const auto& boardWidth = m_boardWidth;
 
 	Checker* selCheckerPtr = m_selectedChecker;
-	
+
 	//Fighting
 
 	//Ordinary fightting
@@ -1988,12 +2001,17 @@ void game_engine_core::GameController::Move()
 
 	m_selectedRouts.Iterate([selCheckerPtr, chToBeKilledPtr, boardPos, boardWidth](Cell* cell)->bool
 		{
+			if (cell == nullptr)
+			{
+				return true;
+			}
+
 			auto Sel_pos = cell->GetPosition();//Take 1 selected position
 			//Calculate direction vector from slected checker position to selected cell position
 			auto MoveDir = Sel_pos - selCheckerPtr->GetPosition();
 			//Move selected checker to selected cell position
 			selCheckerPtr->SetPosition(Sel_pos);
-			
+
 			if (chToBeKilledPtr->isEmpty())
 			{
 				return false;
@@ -2250,27 +2268,87 @@ void game_engine_core::GameController::SelectChecker(bool whiteblack, std::funct
 	std::function<void()> PrintConfirmFunc)
 
 {
-	if (m_use_AI && !whiteblack)//Selection made by AI
-	{
-		//Copy of the checkers array
+	using namespace nonlinear_data_structures::graph_math;
 
+	using namespace linear_data_structures;
+
+	if (m_use_AI && !whiteblack)//Selection made by AI
+	{		
 		system("CLS");
 
 		this->Draw();
 
-		m_ai->SelectPossibleMove(whiteblack);
+		auto sel_turn = m_ai->SelectPossibleTurn(whiteblack);
 
-		m_ai->Get_Selected_Route_Coords().Iterate(
+		auto prev = sel_turn.Get_Prev_Dictionary();
+
+		auto end_points = sel_turn.GetEndPoints();
+
+		size_t end_point_count = end_points.size();
+
+		std::vector<Vector<short>> path; 
+
+		if (sel_turn.GetTakesCount() > 0)//need to find the longest path for attacking sequence
+		{			
+			size_t length_current = 0;
+			
+			std::map<size_t, std::vector<Vector<short>>> temp;
+
+			for (size_t i = 0; i < end_point_count; i++)
+			{
+				path = shortest_path_problem<Vector<short>>::reconstruct_path(sel_turn.GetStart(), 
+					end_points[i], prev, Vector<short>());
+
+				temp.emplace(path.size(), path);
+			}
+
+			size_t size = temp.size();
+
+			size_t i = 0;
+
+			auto start = temp.begin();
+
+			auto end = temp.end();
+
+			while (start != end)
+			{
+				if (i == size - 1)
+				{
+					path = start->second;
+
+					break;
+				}
+
+				start++;
+
+				i++;
+			}
+		}
+		else
+		{
+			path = shortest_path_problem<Vector<short>>::reconstruct_path(sel_turn.GetStart(),
+				sel_turn.GetEndPoints()[std::rand() % end_point_count], prev, Vector<short>());			
+		}
+		
+		if (path.size() > 0)//path was found
+		{
+			for (auto v : path)
+			{
+				m_selectedRouts.AddToTheEnd(FindCellUsingPosition(v));
+			}
+		}
+
+		sel_turn.GetCheckersToBeKilled_Coord().Iterate(
 			[this](Vector<short> elem)->bool
 			{
-				this->m_selectedRouts.AddToTheEnd(this->FindCellUsingPosition(elem));
+				m_checkersToBeKilled.AddToTheEnd(FindCheckerUsingPosition(elem, m_checkers, m_checkersCount));
 
 				return true;
 			}
-		);;
-						
+		);
+
 		m_ai->Reset_Data();
-		
+
 		return;
 	}
 
