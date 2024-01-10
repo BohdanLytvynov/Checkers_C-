@@ -297,9 +297,7 @@ namespace game_engine_core
 	{	
 #pragma region Ctor
 
-		Main_Game_logic(console_graphics_utility* cgu);
-
-		Main_Game_logic() {}
+		Main_Game_logic(console_graphics_utility* cgu);		
 
 #pragma endregion
 
@@ -310,9 +308,11 @@ namespace game_engine_core
 			bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
 			bool checker_under_attack = false);
 
-		void FindPossibleTurns(bool whiteBlack = true, std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill)> func = nullptr);
+		void FindPossibleTurns(bool whiteBlack = true, std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill, bool on_take)> func = nullptr);
 
 		bool OutOfBorders(const Vector<short>& position);
+
+		bool IsOnTheMarginOfTheBoard(const Vector<ushort>& position);
 
 		bool IsAllPossibleTurnsSelected();
 
@@ -325,7 +325,7 @@ namespace game_engine_core
 			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
 			const Vector<short>& dirVector = Vector<short>(),
 			bool multiKill = false, std::function<void(Vector<short> prev_position,
-				Vector<short> current_position, bool multiKill)> func = nullptr);
+				Vector<short> current_position, bool multiKill, bool on_take)> func = nullptr);
 
 		void DrawBoard(Cell** board, size_t rows_count, size_t colums_count);
 
@@ -333,13 +333,18 @@ namespace game_engine_core
 
 		void Reset_Game_Logic_State();
 
+		const bool& AI_Used() const;
+
+		const size_t& GetCountOfPossibleTurns() const;
+		
+
 #pragma region Checker Board
 			
 	protected:
 		ushort m_boardWidth;
 
 		ushort m_boardHeight;
-
+	
 		static Vector<short> m_dirVectors[4];
 
 		static Vector<short> m_boardBasis[2];

@@ -125,7 +125,7 @@ namespace linear_data_structures
 			}
 		}
 
-		virtual void IterateFromStartToEnd(std::function<bool(T)> iterFunction)
+		virtual void IterateFromStartToEnd(std::function<bool(T&)> iterFunction)
 		{
 			double_linked_node<T>* temp = m_head;
 
@@ -140,7 +140,34 @@ namespace linear_data_structures
 			}
 		}
 
-		virtual void IterateFromEndToStart(std::function<bool(T)> iterFunc)
+		virtual void IterateFromStartToEnd(std::function<bool(const T&)> iterFunction) const
+		{
+			double_linked_node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (!iterFunction(temp->GetData()))
+				{
+					break;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+		}
+
+		virtual void IterateFromEndToStart(std::function<bool(T&)> iterFunc)
+		{
+			double_linked_node<T>* temp = m_tail;
+
+			while (temp != nullptr)
+			{
+				iterFunc(temp->GetData());
+
+				temp = temp->GetPrevPtr();
+			}
+		}
+
+		virtual void IterateFromEndToStart(std::function<bool(const T&)> iterFunc) const
 		{
 			double_linked_node<T>* temp = m_tail;
 
@@ -162,7 +189,7 @@ namespace linear_data_structures
 			return m_count;
 		}
 
-		virtual bool Contains(const T& key)
+		virtual bool Contains(const T& key) const
 		{
 			bool contains = false;
 		
@@ -370,7 +397,7 @@ namespace linear_data_structures
 			this->m_count++;
 		}
 
-		void IterateFromStartToEnd(std::function<bool(T)> iterFunc) override
+		void IterateFromStartToEnd(std::function<bool(T&)> iterFunc) override
 		{
 			double_linked_node<T>* temp = this->m_head;
 
@@ -385,7 +412,37 @@ namespace linear_data_structures
 			} while (temp != this->m_head);
 		}
 
-		void IterateFromEndToStart(std::function<bool(T)> iterFunc) override
+		void IterateFromEndToStart(std::function<bool(T&)> iterFunc) override
+		{
+			double_linked_node<T>* temp = this->m_tail;
+
+			if (temp == nullptr)
+				return;
+
+			do
+			{
+				iterFunc(temp->GetData());
+				temp = temp->GetPrevPtr();
+
+			} while (temp != this->m_tail);
+		}
+
+		void IterateFromStartToEnd(std::function<bool(const T&)> iterFunc) const override
+		{
+			double_linked_node<T>* temp = this->m_head;
+
+			if (temp == nullptr)
+				return;
+
+			do
+			{
+				iterFunc(temp->GetData());
+				temp = temp->GetNextPtr();
+
+			} while (temp != this->m_head);
+		}
+
+		void IterateFromEndToStart(std::function<bool(const T&)> iterFunc) const override
 		{
 			double_linked_node<T>* temp = this->m_tail;
 
@@ -501,12 +558,12 @@ namespace linear_data_structures
 #pragma endregion
 
 #pragma region Getters
-		const TKey& GetKey()
+		const TKey& GetKey() const
 		{
 			return m_key;
 		}
 
-		const TValue& GetValue()
+		const TValue& GetValue() const
 		{
 			return m_value;
 		}
@@ -568,7 +625,7 @@ namespace linear_data_structures
 			m_count++;
 		}
 
-		virtual void Iterate(std::function<bool(T)> func)
+		virtual void Iterate(std::function<bool(T&)> func)
 		{
 			if (m_head == nullptr)			
 				return;
@@ -630,7 +687,7 @@ namespace linear_data_structures
 			m_count++;
 		}
 
-		virtual bool isEmpty()
+		virtual bool isEmpty() const
 		{
 			return m_head == nullptr;
 		}
@@ -706,7 +763,7 @@ namespace linear_data_structures
 				Clear();
 		}
 
-		size_t GetCount()
+		size_t GetCount() const
 		{
 			return m_count;
 		}
@@ -918,7 +975,7 @@ namespace nonlinear_data_structures
 			m_verteces->Clear();
 		}
 
-		virtual bool isEmpty()
+		virtual bool isEmpty() const
 		{
 			return m_graph->isEmpty();
 		}
@@ -965,6 +1022,7 @@ namespace nonlinear_data_structures
 			
 			m_graph->IterateFromStartToEnd(foreach_function);
 		}
+
 
 		virtual const edge<Tkey>* const GetEdge(Tkey from, Tkey to) const
 		{
@@ -1067,7 +1125,7 @@ namespace nonlinear_data_structures
 			dfs(start, start, v_d, dir_call, rec_CallBack);
 		}
 
-		std::map<Tkey, bool> generate_visit_dictionary()
+		std::map<Tkey, bool> generate_visit_dictionary() const
 		{
 			std::map<Tkey, bool> v_d;
 
@@ -1081,7 +1139,7 @@ namespace nonlinear_data_structures
 			return v_d;
 		}
 
-		std::map<Tkey, Tkey> generate_prev_dictionary(Tkey default_Value)
+		std::map<Tkey, Tkey> generate_prev_dictionary(Tkey default_Value) const
 		{
 			std::map<Tkey, Tkey> prev;
 
@@ -1239,27 +1297,27 @@ namespace nonlinear_data_structures
 
 			shortest_path_problem(edge_list_graph<Tkey>* &graph) :solver_base<Tkey>(graph) {}
 
-			void Solve(Tkey start)
-			{								
-				using namespace vector_math;
+			//void Solve(Tkey start)
+			//{								
+			//	using namespace vector_math;
 
-				using namespace nonlinear_data_structures;
+			//	using namespace nonlinear_data_structures;
 
-				auto prev_visit_dictionary = this->m_graph->generate_prev_dictionary(Vector<short>());
+			//	auto prev_visit_dictionary = this->m_graph->generate_prev_dictionary(Vector<short>());
 
-				this->m_graph->depth_first_search(start,
-					[&prev_visit_dictionary](Vector<short> prev, Vector<short> current, std::map<Vector<short>, bool> v_d, bool isEnd)->bool
-					{
-						prev_visit_dictionary[current] = prev;
+			//	this->m_graph->depth_first_search(start,
+			//		[&prev_visit_dictionary](Vector<short> prev, Vector<short> current, std::map<Vector<short>, bool> v_d, bool isEnd)->bool
+			//		{
+			//			prev_visit_dictionary[current] = prev;
 
-						if (isEnd)//End of current graph found
-						{
+			//			if (isEnd)//End of current graph found
+			//			{
 
-						}
+			//			}
 
-						return true;
-					});
-			}
+			//			return true;
+			//		});
+			//}
 		};
 	}
 
