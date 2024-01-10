@@ -11,7 +11,7 @@
 namespace vector_math
 {
 	Tdecl
-	class Vector;
+		class Vector;
 
 #pragma region Point declaretion
 
@@ -26,13 +26,13 @@ namespace vector_math
 		point(T x, T y) : ConsoleCoords<T>(x, y) {}
 
 		point(const point<T>& other) : ConsoleCoords<T>(other) {}
-				
+
 #pragma endregion
 
 
 #pragma region Interfaces	
 
-		point<T>& operator = (point<T> &other)
+		point<T>& operator = (point<T>& other)
 		{
 			ConsoleCoords<T>::SetXY(other.GetX(), other.GetY());
 
@@ -46,12 +46,12 @@ namespace vector_math
 
 #pragma endregion
 
-	};	
+	};
 
 #pragma endregion
 
 #pragma region Vector Declaretion
-	
+
 	Tdecl
 		class Vector : public ConsoleCoords<T>
 	{
@@ -96,7 +96,7 @@ namespace vector_math
 
 #pragma region Logical Functions
 
-		bool Equals(const Vector<T> &other) const
+		bool Equals(const Vector<T>& other) const
 		{
 			return this->operator==(other);
 		}
@@ -122,7 +122,7 @@ namespace vector_math
 
 #pragma region Logical Operators
 
-		bool operator || (const Vector<T> &other) const
+		bool operator || (const Vector<T>& other) const
 		{
 			return IsColinear(other);
 		}
@@ -140,37 +140,25 @@ namespace vector_math
 			return !((*this) == other);
 		}
 
-		
+
 		bool operator < (const Vector<T>& other) const
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
-				return this->GetLength() < other.GetLength();
-
-			return false;
+			return this->GetLength() < other.GetLength();
 		}
 
 		bool operator > (const Vector<T>& other) const
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
-				return this->GetLength() > other.GetLength();
-
-			return false;
+			return this->GetLength() > other.GetLength();
 		}
 
 		bool operator >= (const Vector<T>& other) const
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
-				return this->GetLength() >= other.GetLength();
-
-			return false;
+			return this->GetLength() >= other.GetLength();
 		}
 
 		bool operator <= (const Vector<T>& other) const
 		{
-			if (this->GetX() == other.GetX() && this->GetY() == other.GetY())
-				return this->GetLength() <= other.GetLength();
-
-			return false;
+			return this->GetLength() <= other.GetLength();
 		}
 
 #pragma endregion
@@ -244,7 +232,7 @@ namespace vector_math
 
 #pragma region Math functions
 
-		Vector<T> Invert() 
+		Vector<T> Invert()
 		{
 			return this->operator* -1;
 		}
@@ -263,7 +251,7 @@ namespace vector_math
 		{
 			T length = this->GetLength() > 1 ? this->GetLength() : 1;
 
-			return this->operator * (1/length);
+			return this->operator * (1 / length);
 		}
 
 		Vector<T> MultiplyXYSeparetly(T multiplyers[2])
@@ -304,7 +292,7 @@ namespace vector_math
 			}
 		}
 
-		T operator [] (const std::string &axes)
+		T operator [] (const std::string& axes)
 		{
 			if (axes == "X" || axes == "x")
 			{
@@ -317,10 +305,10 @@ namespace vector_math
 			else
 			{
 				throw std::runtime_error("You are requesting to the dimension that doesn't exist!!!");
-			}		
+			}
 		}
 
-		const T operator [] (const std::string &axes) const
+		const T operator [] (const std::string& axes) const
 		{
 			if (axes == "X" || axes == "x")
 			{
@@ -340,14 +328,38 @@ namespace vector_math
 
 #pragma region Converter
 		template<class Tout>
-		Vector<Tout> Convert_To(value_convertion::IConverter<T, Tout> &converter) const
+		Vector<Tout> Convert_To(value_convertion::IConverter<T, Tout>& converter) const
 		{
 			value_convertion::IConverter<T, Tout>* ptr = &converter;
 
-			return Vector<Tout>(ptr->ConvertTo(ConsoleCoords<T>::GetX()), 
+			return Vector<Tout>(ptr->ConvertTo(ConsoleCoords<T>::GetX()),
 				ptr->ConvertTo(ConsoleCoords<T>::GetY()));
 		}
-		
+
+
+#pragma endregion
+
+#pragma region Input
+
+		friend std::istream& operator >> (std::istream& is, Vector<T>& vector)
+		{
+			ConsoleCoords<T> cords;
+
+			is >> cords;
+
+			return is;
+		}
+
+#pragma endregion
+
+#pragma region Output
+
+		friend std::ostream& operator << (std::ostream& os, Vector<T>& vector)
+		{
+			os << " ( " << vector.GetX() << " ; " << vector.GetY() << " ) " << std::endl;
+
+			return os;
+		}
 
 #pragma endregion
 

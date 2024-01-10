@@ -6,4 +6,5 @@
 #include<conio.h>
 #include<cmath>
 #include<functional>
+#include<cstdlib>
 

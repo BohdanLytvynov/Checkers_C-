@@ -1,6 +1,7 @@
 #include<vector>
 #include<map>
 #include<functional>
+#include<string>
 
 #ifndef DATASTRUCTURES_H
 
@@ -9,9 +10,9 @@
 namespace linear_data_structures
 {
 	template<class T>
-	struct Node
+	struct node
 	{
-		Node(T data) : m_data(data), m_next(nullptr) {}
+		node(T data) : m_data(data), m_next(nullptr) {}
 
 		T& GetData()
 		{
@@ -23,7 +24,7 @@ namespace linear_data_structures
 			return m_data;
 		}
 
-		Node<T>*& GetNextPtr()
+		node<T>*& GetNextPtr()
 		{
 			return m_next;
 		}
@@ -31,30 +32,28 @@ namespace linear_data_structures
 	private:
 		T m_data;
 
-		Node<T>* m_next;
+		node<T>* m_next;
 	};
 
 	template <typename T>
-	struct Double_Linked_Node
-	{
-		//Double_Linked_Node() {}
-
-		Double_Linked_Node(T data) : m_data(data) { m_next = nullptr; m_prev = nullptr; }
+	struct double_linked_node
+	{		
+		double_linked_node(T data) : m_data(data) { m_next = nullptr; m_prev = nullptr; }
 
 		T& GetData() { return m_data; }
 
 		const T& GetData() const { return m_data; }
 
-		Double_Linked_Node<T>*& GetNextPtr() { return m_next; }
+		double_linked_node<T>*& GetNextPtr() { return m_next; }
 
-		Double_Linked_Node<T>*& GetPrevPtr() { return m_prev; }
+		double_linked_node<T>*& GetPrevPtr() { return m_prev; }
 
 	private:
 		T m_data;
 
-		Double_Linked_Node<T>* m_next;
+		double_linked_node<T>* m_next;
 
-		Double_Linked_Node<T>* m_prev;
+		double_linked_node<T>* m_prev;
 	};
 
 	template<class T>
@@ -66,7 +65,7 @@ namespace linear_data_structures
 
 		virtual void Clear()
 		{
-			Double_Linked_Node<T>* temp = m_head;
+			double_linked_node<T>* temp = m_head;
 			while (m_head != nullptr) {
 				m_head = m_head->GetNextPtr();
 				delete temp;
@@ -80,7 +79,7 @@ namespace linear_data_structures
 
 		virtual void AddToTheBegining(T data)
 		{			
-			Double_Linked_Node<T>* newNodePtr = new Double_Linked_Node<T>(data);
+			double_linked_node<T>* newNodePtr = new double_linked_node<T>(data);
 
 			if (m_head == nullptr && m_tail == nullptr)
 			{
@@ -104,7 +103,7 @@ namespace linear_data_structures
 
 		virtual void AddToTheEnd(T data)
 		{
-			Double_Linked_Node<T>* newNodePtr = new Double_Linked_Node<T>(data);
+			double_linked_node<T>* newNodePtr = new double_linked_node<T>(data);
 
 			if (m_head == nullptr && m_tail == nullptr)//List is empty
 			{
@@ -126,9 +125,9 @@ namespace linear_data_structures
 			}
 		}
 
-		virtual void IterateFromStartToEnd(std::function<bool(T)> iterFunction)
+		virtual void IterateFromStartToEnd(std::function<bool(T&)> iterFunction)
 		{
-			Double_Linked_Node<T>* temp = m_head;
+			double_linked_node<T>* temp = m_head;
 
 			while (temp != nullptr)
 			{
@@ -141,9 +140,36 @@ namespace linear_data_structures
 			}
 		}
 
-		virtual void IterateFromEndToStart(std::function<bool(T)> iterFunc)
+		virtual void IterateFromStartToEnd(std::function<bool(const T&)> iterFunction) const
 		{
-			Double_Linked_Node<T>* temp = m_tail;
+			double_linked_node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (!iterFunction(temp->GetData()))
+				{
+					break;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+		}
+
+		virtual void IterateFromEndToStart(std::function<bool(T&)> iterFunc)
+		{
+			double_linked_node<T>* temp = m_tail;
+
+			while (temp != nullptr)
+			{
+				iterFunc(temp->GetData());
+
+				temp = temp->GetPrevPtr();
+			}
+		}
+
+		virtual void IterateFromEndToStart(std::function<bool(const T&)> iterFunc) const
+		{
+			double_linked_node<T>* temp = m_tail;
 
 			while (temp != nullptr)
 			{
@@ -163,7 +189,7 @@ namespace linear_data_structures
 			return m_count;
 		}
 
-		virtual bool Contains(const T& key)
+		virtual bool Contains(const T& key) const
 		{
 			bool contains = false;
 		
@@ -190,7 +216,7 @@ namespace linear_data_structures
 				return;
 			}
 
-			Double_Linked_Node<T>* for_delete = nullptr;
+			double_linked_node<T>* for_delete = nullptr;
 
 			if (m_head->GetData() == key)//Need To delete Head Node
 			{
@@ -216,7 +242,7 @@ namespace linear_data_structures
 			{
 				//search for node
 
-				Double_Linked_Node<T>* temp = m_head->GetNextPtr();
+				double_linked_node<T>* temp = m_head->GetNextPtr();
 
 				while (temp != m_tail)
 				{
@@ -242,11 +268,45 @@ namespace linear_data_structures
 
 		doubled_linked_list& operator = (const doubled_linked_list& other) = delete;
 
+		virtual const double_linked_node<T>*const operator[] (const T& key) const
+		{
+			double_linked_node<T>*temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (temp->GetData() == key)
+				{
+					return temp;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+
+			return nullptr;
+		}
+
+		virtual double_linked_node<T>* const operator[](const T& key)
+		{
+			double_linked_node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (temp->GetData() == key)
+				{
+					return temp;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+
+			return nullptr;
+		}
+
 	protected:
 
-		Double_Linked_Node<T>* m_head;
+		double_linked_node<T>* m_head;
 
-		Double_Linked_Node<T>* m_tail;
+		double_linked_node<T>* m_tail;
 
 		size_t m_count;
 	};
@@ -267,7 +327,7 @@ namespace linear_data_structures
 
 		void Clear() override
 		{
-			Double_Linked_Node<T>* temp = this->m_head;
+			double_linked_node<T>* temp = this->m_head;
 
 			while (this->m_head != nullptr)
 			{
@@ -283,7 +343,7 @@ namespace linear_data_structures
 
 		void AddToTheBegining(T data) override
 		{			
-			Double_Linked_Node<T>* newNodePtr = new Double_Linked_Node<T>(data);
+			double_linked_node<T>* newNodePtr = new double_linked_node<T>(data);
 
 			if (this->m_head == nullptr && this->m_tail == nullptr)//List is empty
 			{
@@ -311,7 +371,7 @@ namespace linear_data_structures
 
 		void AddToTheEnd(T data) override
 		{
-			Double_Linked_Node<T>* newNodePtr = new Double_Linked_Node<T>(data);
+			double_linked_node<T>* newNodePtr = new double_linked_node<T>(data);
 
 			if (this->m_head == nullptr && this->m_tail == nullptr)//List is empty
 			{
@@ -337,9 +397,9 @@ namespace linear_data_structures
 			this->m_count++;
 		}
 
-		void IterateFromStartToEnd(std::function<bool(T)> iterFunc) override
+		void IterateFromStartToEnd(std::function<bool(T&)> iterFunc) override
 		{
-			Double_Linked_Node<T>* temp = this->m_head;
+			double_linked_node<T>* temp = this->m_head;
 
 			if (temp == nullptr)
 				return;
@@ -352,9 +412,39 @@ namespace linear_data_structures
 			} while (temp != this->m_head);
 		}
 
-		void IterateFromEndToStart(std::function<bool(T)> iterFunc) override
+		void IterateFromEndToStart(std::function<bool(T&)> iterFunc) override
 		{
-			Double_Linked_Node<T>* temp = this->m_tail;
+			double_linked_node<T>* temp = this->m_tail;
+
+			if (temp == nullptr)
+				return;
+
+			do
+			{
+				iterFunc(temp->GetData());
+				temp = temp->GetPrevPtr();
+
+			} while (temp != this->m_tail);
+		}
+
+		void IterateFromStartToEnd(std::function<bool(const T&)> iterFunc) const override
+		{
+			double_linked_node<T>* temp = this->m_head;
+
+			if (temp == nullptr)
+				return;
+
+			do
+			{
+				iterFunc(temp->GetData());
+				temp = temp->GetNextPtr();
+
+			} while (temp != this->m_head);
+		}
+
+		void IterateFromEndToStart(std::function<bool(const T&)> iterFunc) const override
+		{
+			double_linked_node<T>* temp = this->m_tail;
 
 			if (temp == nullptr)
 				return;
@@ -399,7 +489,7 @@ namespace linear_data_structures
 
 		void Delete(const T& key) override
 		{
-			Double_Linked_Node<T>* for_delete = nullptr;
+			double_linked_node<T>* for_delete = nullptr;
 
 			if (this->m_head == nullptr && this->m_tail == nullptr)
 			{
@@ -432,7 +522,7 @@ namespace linear_data_structures
 			}
 			else
 			{
-				Double_Linked_Node<T>* temp = this->m_head;
+				double_linked_node<T>* temp = this->m_head;
 
 				do
 				{
@@ -468,12 +558,12 @@ namespace linear_data_structures
 #pragma endregion
 
 #pragma region Getters
-		const TKey& GetKey()
+		const TKey& GetKey() const
 		{
 			return m_key;
 		}
 
-		const TValue& GetValue()
+		const TValue& GetValue() const
 		{
 			return m_value;
 		}
@@ -504,21 +594,67 @@ namespace linear_data_structures
 	{
 		single_linked_list() :m_head(nullptr), m_count(0) {}
 
-		single_linked_list(const single_linked_list& other) = delete;
+		single_linked_list(const single_linked_list& other)
+		{
+			other.Iterate(
+				[this](const T& elem)->bool
+				{
+					AddToTheEnd(elem);
+					return true;
+				}
+			);
+		}
 
-		single_linked_list& operator = (const single_linked_list& other) = delete;
+		single_linked_list& operator = (const single_linked_list& other)
+		{
+			other.Iterate(
+				[this](const T& elem)->bool
+				{
+					AddToTheEnd(elem);
+					return true;
+				}
+			);
+			return *this;
+		}
 
 		virtual void AddToTheBegining(T value) {
-			Node<T>* newNode = new Node<T>(value);
+			node<T>* newNode = new node<T>(value);
 			newNode->GetNextPtr() = m_head;
 			m_head = newNode;
 
 			m_count++;
 		}
 
-		virtual void Iterate(std::function<bool(T)> func)
+		virtual void Iterate(std::function<bool(T&)> func)
 		{
-			Node<T>* temp = m_head;
+			if (m_head == nullptr)			
+				return;
+			
+			if (m_count == 0)			
+				return;			
+
+			node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{				
+				if (!func(temp->GetData()))
+				{
+					break;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+		}
+
+		virtual void Iterate(std::function<bool(const T&)> func) const
+		{
+			if (m_head == nullptr)
+				return;
+
+			if (m_count == 0)
+				return;
+
+			node<T>* temp = m_head;
 
 			while (temp != nullptr)
 			{
@@ -533,15 +669,15 @@ namespace linear_data_structures
 
 
 		// Function to insert a new node at the end of the list
-		virtual void AddToTheEnd(T value) {
-			Node<T>* newNode = new Node<T>(value);
+		virtual void AddToTheEnd(const T& value) {
+			node<T>* newNode = new node<T>(value);
 			if (m_head == nullptr) {
 				m_head = newNode;
 				m_count++;
 				return;
 			}
 
-			Node<T>* temp = m_head;
+			node<T>* temp = m_head;
 			while (temp->GetNextPtr() != nullptr) {
 				temp = temp->GetNextPtr();
 			}
@@ -551,16 +687,15 @@ namespace linear_data_structures
 			m_count++;
 		}
 
-
-		virtual bool isEmpty()
+		virtual bool isEmpty() const
 		{
 			return m_head == nullptr;
 		}
 
 		// Function to delete a node from the linked list
 		virtual void RemoveNode(T value) {
-			Node<T>* temp = m_head;
-			Node<T>* prev = nullptr;
+			node<T>* temp = m_head;
+			node<T>* prev = nullptr;
 
 			// If the node to be deleted is the head
 			if (temp != nullptr && temp->GetData() == value) {
@@ -587,9 +722,26 @@ namespace linear_data_structures
 			--m_count;
 		}
 
-		virtual Node<T>* GetNode(T value)
+		virtual node<T>*const operator[] (const T& value)
 		{
-			Node<T>* temp = m_head;
+			node<T>* temp = m_head;
+
+			while (temp != nullptr)
+			{
+				if (temp->GetData() == value)
+				{
+					return temp;
+				}
+
+				temp = temp->GetNextPtr();
+			}
+
+			return nullptr;
+		}
+
+		virtual const node<T>* const operator[](const T& value) const
+		{
+			node<T>* temp = m_head;
 
 			while (temp != nullptr)
 			{
@@ -606,17 +758,19 @@ namespace linear_data_structures
 
 		// Destructor to deallocate memory
 		virtual ~single_linked_list() {
-			Clear();
+
+			if(m_head != nullptr)
+				Clear();
 		}
 
-		size_t GetCount()
+		size_t GetCount() const
 		{
 			return m_count;
 		}
 
 		virtual void Clear()
 		{
-			Node<T>* temp = m_head;
+			node<T>* temp = m_head;
 			while (m_head != nullptr) {
 				m_head = m_head->GetNextPtr();
 				delete temp;
@@ -630,7 +784,7 @@ namespace linear_data_structures
 
 		virtual T& operator [] (size_t index)
 		{
-			Node<T>* temp = m_head;
+			node<T>* temp = m_head;
 
 			size_t i = 0;
 
@@ -651,7 +805,7 @@ namespace linear_data_structures
 
 		virtual const T& operator [] (size_t index) const
 		{
-			Node<T>* temp = m_head;
+			node<T>* temp = m_head;
 
 			size_t i = 0;
 
@@ -677,7 +831,7 @@ namespace linear_data_structures
 				return false;
 			}
 
-			Node<T>* temp = m_head;
+			node<T>* temp = m_head;
 
 			while (temp != nullptr)
 			{
@@ -696,7 +850,7 @@ namespace linear_data_structures
 
 
 	private:
-		Node<T>* m_head;
+		node<T>* m_head;
 
 		size_t m_count;
 	};
@@ -801,15 +955,29 @@ namespace nonlinear_data_structures
 			m_verteces = new linear_data_structures::single_linked_list<Tkey>();
 		}
 
+		edge_list_graph(const edge_list_graph<Tkey>& other) = delete;
+
 		virtual ~edge_list_graph()
 		{
 			m_graph->Clear();
 
 			m_verteces->Clear();
-
+			
 			delete m_graph;
 
 			delete m_verteces;
+		}
+
+		virtual void Clear()
+		{
+			m_graph->Clear();
+
+			m_verteces->Clear();
+		}
+
+		virtual bool isEmpty() const
+		{
+			return m_graph->isEmpty();
 		}
 
 		virtual void AddEdge(const edge<Tkey>& edge)
@@ -819,7 +987,12 @@ namespace nonlinear_data_structures
 				m_verteces->AddToTheEnd(edge.GetFrom());
 			}
 
-			m_graph->AddToTheEnd(edge);			
+			if (!m_verteces->Contains(edge.GetTo()))
+			{
+				m_verteces->AddToTheEnd(edge.GetTo());
+			}
+
+			m_graph->AddToTheEnd(edge);				
 		}
 
 		virtual void RemoveEdge(const edge<Tkey>& edge)
@@ -827,11 +1000,110 @@ namespace nonlinear_data_structures
 			m_graph->Delete(edge);			
 		}
 
+		virtual linear_data_structures::double_linked_node<edge<Tkey>>*const GetEdge(Tkey from, Tkey to)
+		{		
+			if (m_graph->isEmpty())
+			{
+				return nullptr;
+			}
+
+			return m_graph->operator[](edge<Tkey>(from, to));
+		}
+		
+		virtual const size_t& GetEdgeCount() const
+		{
+			return m_graph->GetCount();
+		}
+
+		virtual void For(std::function<bool(edge<Tkey> edge)> foreach_function)
+		{
+			if (m_graph->isEmpty())			
+				return;
+			
+			m_graph->IterateFromStartToEnd(foreach_function);
+		}
+
+
+		virtual const edge<Tkey>* const GetEdge(Tkey from, Tkey to) const
+		{
+			if (m_graph->isEmpty())
+			{
+				return nullptr;
+			}
+
+			edge<Tkey>* result = nullptr;
+
+			m_graph->IterateFromStartToEnd(
+				[from, to, &result](edge<Tkey> elem)->bool
+				{
+					if (elem.GetFrom() == from && elem.GetTo() == to)
+					{
+						result = &elem;
+						return false;
+					}
+
+					return true;
+				}
+			);
+
+			return result;
+		}
+
+		virtual const edge<Tkey>* const GetEdgeByFrom(Tkey from) const
+		{
+			if (m_graph->isEmpty())
+			{
+				return nullptr;
+			}
+
+			edge<Tkey>* result = nullptr;
+
+			m_graph->IterateFromStartToEnd(
+				[from, &result](edge<Tkey> elem)->bool
+				{
+					if (elem.GetFrom() == from)
+					{
+						result = &elem;
+						return false;
+					}
+
+					return true;
+				}
+			);
+
+			return result;
+		}
+
+		virtual edge<Tkey>* const GetEdgeByFrom(Tkey from)
+		{
+			if (m_graph->isEmpty())
+			{
+				return nullptr;
+			}
+
+			edge<Tkey>* result = nullptr;
+
+			m_graph->IterateFromStartToEnd(
+				[from, &result](edge<Tkey> elem)->bool
+				{
+					if (elem.GetFrom() == from)
+					{
+						result = &elem;
+						return false;
+					}
+
+					return true;
+				}
+			);
+
+			return result;
+		}
+
 		std::vector<Tkey> Get_Adjacent_Verteces(const Tkey& vertexKey)
 		{
 			std::vector<Tkey> result;
 
-			m_graph->IterateFromStartToEnd([&result](edge<Tkey> edge)->bool
+			m_graph->IterateFromStartToEnd([&result, vertexKey](edge<Tkey> edge)->bool
 				{
 					if (edge.GetFrom() == vertexKey)
 					{
@@ -845,17 +1117,17 @@ namespace nonlinear_data_structures
 			return result;
 		}
 
-		void depth_first_search(Tkey start, std::function<bool(Tkey Curr_vertex, std::map<Tkey, bool>)> dir_call = nullptr,
+		void depth_first_search(Tkey start, std::function<bool(Tkey Prev_vertex, Tkey Curr_vertex, std::map<Tkey, bool>, bool end_found)> dir_call = nullptr,
 			std::function<bool(Tkey Curr_vertex)> rec_CallBack = nullptr)
 		{
 			std::map<Tkey, bool> v_d = generate_visit_dictionary();
 
-			dfs(start, v_d, dir_call, rec_CallBack);
+			dfs(start, start, v_d, dir_call, rec_CallBack);
 		}
 
-		std::map<Tkey, bool> generate_visit_dictionary()
+		std::map<Tkey, bool> generate_visit_dictionary() const
 		{
-			std::map<Tkey, bool> v_d = std::map<Tkey, bool>(m_verteces->GetCount());
+			std::map<Tkey, bool> v_d;
 
 			m_verteces->Iterate([&v_d](Tkey elem)->bool
 				{
@@ -867,36 +1139,57 @@ namespace nonlinear_data_structures
 			return v_d;
 		}
 
+		std::map<Tkey, Tkey> generate_prev_dictionary(Tkey default_Value) const
+		{
+			std::map<Tkey, Tkey> prev;
+
+			m_verteces->Iterate([&prev, default_Value](Tkey vertex)->bool
+				{
+					prev.emplace(vertex, default_Value);
+
+					return true;
+				});
+
+			return prev;
+		}
+
+#pragma region Operator
+
+		edge_list_graph<Tkey>& operator = (const edge_list_graph<Tkey>& other) = delete;
+
+#pragma endregion
+
+
 	private:
 
-		void dfs(Tkey start, std::map<Tkey, bool>& v_d, 
-			std::function<bool (Tkey Curr_vertex, std::map<Tkey, bool>)> dir_call = nullptr,
+		void dfs(Tkey current, Tkey prev, std::map<Tkey, bool>& v_d, 
+			std::function<bool (Tkey Prev_vertex, Tkey Curr_vertex, std::map<Tkey, bool>, bool end_found)> dir_call = nullptr,
 			std::function<bool (Tkey Curr_vertex)> rec_CallBack = nullptr)
 		{
-			v_d[start] = true;
+			v_d[current] = true;
+
+			std::vector<Tkey> adjVerteces = this->Get_Adjacent_Verteces(current);
 
 			if (dir_call != nullptr)
-				if (!dir_call(start, v_d))
+				if (!dir_call(prev, current, v_d, adjVerteces.size() == 0? true : false))
 					return;
-
-			std::vector<Tkey> adjVerteces = this->Get_Adjacent_Verteces(start);
-
+			
 			for (auto next : adjVerteces)
 			{
 				if (v_d[next] == false)
 				{
-					dfs(next, v_d, dir_call, rec_CallBack);
+					dfs(next, current, v_d, dir_call, rec_CallBack);
 				}
 			}
 
 			if (rec_CallBack != nullptr)
-				if (!rec_CallBack(start))
+				if (!rec_CallBack(current))
 					return;
 		}
 
 		linear_data_structures::doubled_linked_list<edge<Tkey>>* m_graph;
 
-		linear_data_structures::single_linked_list<Tkey>* m_verteces;		
+		linear_data_structures::single_linked_list<Tkey>* m_verteces;			
 	};
 
 	template<typename Tkey, typename Tdata>
@@ -943,6 +1236,90 @@ namespace nonlinear_data_structures
 	private:
 		linear_data_structures::single_linked_list<linear_data_structures::key_value_pair<Tkey, Tdata>>* m_vertex_data;
 	};
+
+	namespace graph_math
+	{
+		template<class Tkey>
+		struct solver_base
+		{
+			solver_base(nonlinear_data_structures::edge_list_graph<Tkey> *graph)
+			{
+				m_graph = graph;
+			}
+
+		protected:
+			nonlinear_data_structures::edge_list_graph<Tkey> *m_graph;
+		};
+
+		template<typename Tkey>
+		struct shortest_path_problem : protected solver_base<Tkey>
+		{
+			static std::vector<Tkey> reconstruct_path(Tkey start, Tkey end, std::map<Tkey, Tkey> prev_Dictionary, Tkey emptyValue)
+			{
+				std::vector<Tkey> path;
+
+				linear_data_structures::doubled_linked_list<Tkey> temp;
+
+				for (Tkey current = end; current != emptyValue; current = prev_Dictionary[current])
+				{
+					temp.AddToTheEnd(current);
+
+					if (current == start)
+					{
+						break;
+					}
+				}
+
+				//Reverse
+
+				temp.IterateFromEndToStart(
+					[&path](Tkey elem)->bool
+					{
+						path.push_back(elem);
+
+						return true;
+					}
+				);
+
+				if (path.size() == 0)
+				{
+					return std::vector<Tkey>();
+				}
+				
+				if (path[0] == start)
+				{
+					return path;
+				}
+
+				return std::vector<Tkey>();
+				
+			}
+
+			shortest_path_problem(edge_list_graph<Tkey>* &graph) :solver_base<Tkey>(graph) {}
+
+			//void Solve(Tkey start)
+			//{								
+			//	using namespace vector_math;
+
+			//	using namespace nonlinear_data_structures;
+
+			//	auto prev_visit_dictionary = this->m_graph->generate_prev_dictionary(Vector<short>());
+
+			//	this->m_graph->depth_first_search(start,
+			//		[&prev_visit_dictionary](Vector<short> prev, Vector<short> current, std::map<Vector<short>, bool> v_d, bool isEnd)->bool
+			//		{
+			//			prev_visit_dictionary[current] = prev;
+
+			//			if (isEnd)//End of current graph found
+			//			{
+
+			//			}
+
+			//			return true;
+			//		});
+			//}
+		};
+	}
 
 }
 
