@@ -50,7 +50,16 @@ Also I would like to say a few words about general approach. I have some experie
 According to this concept all our game is a system. System consists of many modules, that have some functions. And also we have some connections between all this modules. To establish it, as I said earlier, we need to use **OOP**. The main idea is that while game is played the state or invariant of all our objects in a system changes. And after that render system redraws the UI part of the game. In next part we will see the structure of our system.
 
 ## Structure
-First lets take a look at our main structures that are used in this game. All of their declarations are situated in [**GameEngine.h**](https://github.com/BohdanLytvynov/Checkers_C-/blob/main/Checkers/GameEngine.h) header file.
+First lets take a look at our main structures that are used in this game. All of their declarations are situated in [**GameEngine.h**](https://github.com/BohdanLytvynov/Checkers_C-/blob/main/Checkers/GameEngine.h) header file. I prefere to use structures against classes. The first structure is the **GameObject** it is a base structure for **Pieces** and **Cells of the board**. Lets look at what behaviour and state it has. 
+
+**GameObject** **state** variables must include the next values:
+- Size of the object. (Width and Height)
+- Position of the object. Here we can use Vector to describe it's global position.
+- Chars that will be used to draw the object in the console. Here I used the pointer to array of chars. The pointer doesn't know anything about the size of the array? so we need the unsigned variable to store the count of chars in our array.
+- Additional variable to control focus system.
+  
+**GameObject Behaviours**:
+  To my mind we can give it oly one behaviour and it is Focus behaviour. What is it? Focus, from my point of view, is changing the visual appearence of the object, when some events takes place. In our case it cam be the selection of the piece by the user.
 
 
 
