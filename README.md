@@ -123,8 +123,52 @@ Here the Start value was our center, since 6/2 = 3. And now the main part. We dr
 ## Building Options Structures
 In our game, at the start of it, we have to initialize 8 by 8 matrix of cells, and 12 instances of checkers. Instances of cells are all the same. It is also true for Checkers. So I decided to create **Building options Structures** to store preferences for initializing this 2 essential for game objects.
 
-
 ## Main Game Controller
+The main game logic is controlled with the help of the **Game Controller** functions. Later I have implemented the **AI** module. I realized that **Game Controller** and **AI** module must have similar functions to use in the game. So we can treat to **AI** module like the version of the smart **Game Contorller**, that uses **Graph Algorithms** to calculate a propriate turn. I created the base class **Main Game Logic**, where I implemented all the functions which were needed for gameplay,
+without those one, which influence UI. Here is a short listing of them:
+
+- FindOrthogonalVector(const Vector<short>& v) const; Used to find Orthogonal Vector 
+
+- FindAllPosibleTurnsForKingRecursive(Checker* selectedChecker, const Vector<short>& position,
+			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
+			bool& onCallback, const Vector<short>& dirVector = Vector<short>(),
+			bool checker_under_attack = false); Used to find all possible turns for King
+
+- void FindPossibleTurns(bool whiteBlack = true, std::function<void(Vector<short> position, Vector<short> PrevPos, bool multiKill, bool on_take)> func = nullptr);The same as previous, but is used for ordinary Checker.
+  
+- bool OutOfBorders(const Vector<short>& position); Indicates wether checker is out of the Border
+
+- bool IsOnTheMarginOfTheBoard(const Vector<ushort>& position); Indicates wether checker is about to be out of the Border
+
+- bool IsAllPossibleTurnsSelected(); Indicates wether all possible turns selected or not.
+
+- Cell* FindCellUsingPosition(const Vector<short>& positionVector); Iterates the matrix, that stores Pointers to Cells and gets the cell pointer according to the position Vector
+
+- Checker* FindCheckerUsingPosition(const Vector<short>& positionVector, Checker* checkers,
+			size_t checkers_count); The same as previous but returns the pointer to the Checker according to position Vector.
+
+- void FindPossibleTurnRecursive(Checker* selectedChecker, const Vector<short>& position, 
+			Vector<short>& prevPosition, Checker* checkers, size_t checkers_count,
+			const Vector<short>& dirVector = Vector<short>(),
+			bool multiKill = false, std::function<void(Vector<short> prev_position,
+				Vector<short> current_position, bool multiKill, bool on_take)> func = nullptr);Used to find all possible turns for piece.
+
+- void DrawBoard(Cell** board, size_t rows_count, size_t colums_count); Call the Render function to draw all the elements
+
+- void DrawCheckers(Checker* checkers, size_t checkers_count); render all the checkers
+
+- void Reset_Game_Logic_State(); Resets main control variables
+
+- const bool& AI_Used() const; Determines wether AI is active
+
+- const size_t& GetCountOfPossibleTurns() const; Used to find out wether AI has find some possible turns or not.
+
+Some of this functions are used by AI too. 
+[!Note]
+As you can see AI can have some Render functions, They are used to show the human player the AI moves.
+
+**Game Controller** class is a **Singleton** that derrives from the Main_Game_Logic base class, like **checker_ai**. 
+**Game Controller** has a pointer to the AI module, so I cann modify AI module by expanding the **checker_ai** structure.
 
 
   
