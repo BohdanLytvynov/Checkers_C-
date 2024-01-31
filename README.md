@@ -94,7 +94,8 @@ Using interface approach also saved me from other bad issue, that can take place
 
 So I implement all the interfaces that I required, and all fields for that behavior I placed in the **Cell**. All the significent changings were made in function that renders **Cell**. 
 
-**Checker itself**
+## Checker itself
+
 This object is very simple. I just used the **Killable** and inheritance. The main **Complex Thing** here is the drawing of the **Checker** and the **King**.
 In real world checkers are circular in shape. But unfortunatly in console we have no possibility to use float numbers for coordinates. We can use only **positive integer numbers** that determine the position of the cursor in the console. Also we can't use sine and cosine functions to draw circles. I decided to draw something that looks like a circle. I have got something like this:
 
@@ -107,8 +108,11 @@ As you can see it is something similar to a piece. The piece is drawn using the 
   ![Game_screenshot_Checker Sizes](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/b0f7c027-3d00-4832-9563-389bad86ccc8)
 
   Let me try to explain the drawing mechanism. First we need to find the center of our CHecker. It can be done by using: **width of the checker / 2** expresion.
-  [!IMPORTANT]
-  Since we use a console to draw our graphics we have one more problem. Our **"so called pixel"** *console cursor* is twice larger in height with respect to it's width. I have found an ideal width and height for pieces, and it is 10 for width and 6 for height.
+  
+  > [!IMPORTANT]
+  > Since we use a console to draw our graphics we have one more problem. Our **"so called pixel"** *console cursor* is twice larger in height with respect to it's width.
+
+I have found an ideal width and height for pieces, and it is 10 for width and 6 for height.
   Ok, lets return to our problem. We have already calculated the center of our Checker it is 5, since 10 / 2 is 5. Then we need to calculate second point, let it be **Hormid2** and it is Previous value, let it be **Hormid1** + m_HorbaseLength - 1. By the way m_HorbaseLength and m_VertBaseLength better to se to 2.
   Using this we can calculate the conditions where we have the end and the start of the Checker's **"first row"**, like this:
 
