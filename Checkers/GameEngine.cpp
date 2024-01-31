@@ -1443,9 +1443,7 @@ game_engine_core::ai_modules::turn<vector_math::Vector<short>> game_engine_core:
 		Vector<short> start_Vertex;
 
 		bool startDetected = false;
-
-		bool take_sequence = false;
-
+		
 		edge_list_graph<Vector<short>> moveGraph;
 
 		for (size_t i = start; i <= end; i++)
