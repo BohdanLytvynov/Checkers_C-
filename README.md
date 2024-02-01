@@ -177,7 +177,26 @@ Also **Game Controller** has some additional drawing functions to Draw all our s
 
 ## Deeper inside the Game cycle
 
+### How to Store Pieces
+
 As I mentioned before the first instruction of our game cycle is to let the player to chose the propriate Piece that he would like to use for hus turn. Of course it has some differences between the human's selector of moves and the AI's one. First I have to show you the structure that stores all the pieces. I decided to use a symple array of pointers at the **Checker**. To save a memory space I decided to put all the pieces of all colors inside the one array of pointers. totaly we have 24 pieces. 12 white checkers - for 1 player and 12 black - for 2 player. In my game the white checkers are blue and the black one are red. I have chosen this color scheme cause it looks like good with my Black and White cells. Now lets determine a propriate indexes of our arrar. The **Total length of our array willl be 24.** I placed black checkers first, then white checkers. So the **"range for Black pieces"** is from 0 to (0 + 23)/2 => from 0 to 11. and the **"White pieces range"** is from 12 to 23. So using propriate conditions we can operate with white or black pieces.
+
+## Selection of the Propriate Piece
+
+For selection I used Focus behavior. I just change the background color of the piece and Darw everything again. For focusing I decided to use the green Color. Also I read the input from the keyboard. I  expect to have such inputs^
+- **A**. It moves the selection left.
+- **D**. It moves the selection right
+- **S**. Makes the Selection.
+- **C**. Confirms the selection.
+- **R**. Gives an opportunity to make selection again.
+
+ The same controls are used all over the game. When the game starts we should operate with white pieces in range from 0 to 11, and the piece under the 0 index is Focused. When we press the **A** or **D** buttons we must Unfocus previous Piece and move ether left or right, it depends from the pressed Key, and call the Focus function on new piece, after that we redraw all the scene. Also when we reach the end of the range, for example 11 we will go back to satrt to the 0 index, similarly when we reach the beginig, and if we continue to go in the same direction, we will be moved to the end of the range. This how the selector for human works. Now lets dive into an AI Selection Module.
+
+ ## Basic Principles of My AI
+
+ My variant of **AI**, for now has only one difficulty mode. It's easy. But I am continue working on more complex and more smart **AI**. ain principles are^
+ - I want my AI to find the piece with the best routes. 
+
 
 
 
