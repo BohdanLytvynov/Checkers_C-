@@ -238,6 +238,7 @@ Using this principle we can determine the coorect movement direction.
 > In checkers Kings can move in any directions, diagonaly, unlimited. And it can make the Algorithm much complex. It also can perform multitakes. 
 
 
+
 > [!NOTE]
 > And you can notice, that we have some std::functions, it is used to be able to use lambda functions, outside this function to be able to process data outside. It is used in AI, to build **Graphs**.
 
