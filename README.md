@@ -168,11 +168,18 @@ without those one, which influence UI. Here is a short listing of them:
 - const size_t& GetCountOfPossibleTurns() const; Used to find out wether AI has find some possible turns or not.
 
 Some of this functions are used by AI too. 
-[!Note]
-As you can see AI can have some Render functions, They are used to show the human player the AI moves.
+> [!Note]
+> As you can see AI can have some Render functions, They are used to show the human player the AI moves.
 
 **Game Controller** class is a **Singleton** that derrives from the Main_Game_Logic base class, like **checker_ai**. 
 **Game Controller** has a pointer to the AI module, so I cann modify AI module by expanding the **checker_ai** structure.
+Also **Game Controller** has some additional drawing functions to Draw all our system and to make visible possible turns or User selected routes. 
+
+## Deeper inside the Game cycle
+
+As I mentioned before the first instruction of our game cycle is to let the player to chose the propriate Piece that he would like to use for hus turn. Of course it has some differences between the human's selector of moves and the AI's one. First I have to show you the structure that stores all the pieces. I decided to use a symple array of pointers at the **Checker**. To save a memory space I decided to put all the pieces of all colors inside the one array of pointers. totaly we have 24 pieces. 12 white checkers - for 1 player and 12 black - for 2 player. In my game the white checkers are blue and the black one are red. I have chosen this color scheme cause it looks like good with my Black and White cells. Now lets determine a propriate indexes of our arrar. The **Total length of our array willl be 24.** I placed black checkers first, then white checkers. So the **"range for Black pieces"** is from 0 to (0 + 23)/2 => from 0 to 11. and the **"White pieces range"** is from 12 to 23. So using propriate conditions we can operate with white or black pieces.
+
+
 
 
   
