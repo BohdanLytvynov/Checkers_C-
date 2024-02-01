@@ -190,12 +190,67 @@ For selection I used Focus behavior. I just change the background color of the p
 - **C**. Confirms the selection.
 - **R**. Gives an opportunity to make selection again.
 
- The same controls are used all over the game. When the game starts we should operate with white pieces in range from 0 to 11, and the piece under the 0 index is Focused. When we press the **A** or **D** buttons we must Unfocus previous Piece and move ether left or right, it depends from the pressed Key, and call the Focus function on new piece, after that we redraw all the scene. Also when we reach the end of the range, for example 11 we will go back to satrt to the 0 index, similarly when we reach the beginig, and if we continue to go in the same direction, we will be moved to the end of the range. This how the selector for human works. Now lets dive into an AI Selection Module.
+ The same controls are used all over the game. When the game starts we should operate with white pieces in range from 0 to 11, and the piece under the 0 index is Focused. When we press the **A** or **D** buttons we must Unfocus previous Piece and move ether left or right, it depends from the pressed Key, and call the Focus function on new piece, after that we redraw all the scene. Also when we reach the end of the range, for example 11 we will go back to satrt to the 0 index, similarly when we reach the beginig, and if we continue to go in the same direction, we will be moved to the end of the range. This how the selector for human works. We will come back to the AI Selection module later. We need the understanding how turn finder system works.
 
- ## Basic Principles of My AI
+## Possible Turns Calcultor
+The mechanism is slightly differ for the **Piece** and the **King**. For the **Piece** we will use **FindAllPossibleTurns** function. The process of route finding must be recursive. So I have created an envelope, it is **FindAllPossibleTurns**, and there is a recursive function, called **FindAllPossibleTurnsRecursive** inside it.
+I have used recurtion principle here cause I noticed that we need to repeat the same logic until some base conditions will be reached. When the Checker was chosen, we call the **FindAllPossibleTurns** function. It starts from the current Checker position. Let me remind you, that Checker can move in diagonal directions, only one Cell per one Move. That diagonal directions can be described by the Vectors { (1, 1), (1, -1), (-1, -1), (-1, 1) }, we can multiply each vector component by the width and the height of the Cell. And we'll get 4 dir Vectors: 
+
+![Checkers Dir Vectors](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/82ab3bd7-e079-4bf3-b0d3-4823f67672b2)
+
+Look at this picture. The red dot is a local coordinate origin of the object. Green Vectors are -> dirvectors that are modified, using width and height of the Cell. According to our approach: "each object in a scene has it's own position Vector." Again look at this:
+
+![Object position vectors](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/05b08d21-e39d-4d09-bee4-4c11413896e2)
+
+Orange Vectors {r1, r2, r3} are the position vectors of our objects. And using some Vector math laws, like adding we can move to the next cell in certain direction.
+
+![Calc new position](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/ff7c1925-5af2-4f11-bf93-5b218914e318)
+
+Here we have r1 - position Vector, d1 - one of the direction Vectors. If we do r1 + d1 = r2, new position Vector that points at another diagonaly placed **Cell**, that is exactly what we need, to perform the route examination. So we can add 1 of the direction Vectors to the current position Vector and get the new position. 
+
+### Algorithm for ordinary Checker
+
+- First we have the initial position, it is equal to the position of the selected Checker. We have to examine all the 4 Cells near the selected piece.
+- Then we examine the new position.
+	- If it is Empty, no pieces exists at this position, we can add this position to a **Possible Turns** collection.
+  	- If it contains checker, we have two variants:
+    		- Checker is ours, so we need to stop examine this rote, and we will come to **Recurtion CallBack** of this branch.
+    		- It is enemy Checker, ok, again we have to check 2 cases:
+    			- The cell behind the enemy Checker is empty, so we can perform a take. And we add this Checker, I want to remind, it is a pointer, to the Collections, that store Checkers to be Killed. Also we need to continue rout examination from this position.
+    			- The enemy checker is covered, and take is impossible.
+	- Next position Vector points outside the board, we need to stop here.
+	- Also we need to stop if we are about to go outside the Board.
+
+> [!NOTE]
+> In Checkers we have the certain rules, how we can move pieces. If there are no takes, piece can move diagonaly only forward to the oposite side. To move it backward we > need to have a possibility to make a take, that requires backward movement. We can use Vector math again, asspecialy **Dot Product** of two Vectors. **Dot Product** is > the value, that we get, when we are projecting one Vector on another. According to the Angle between 2 Vectors we can get such results:
+- Greater then 0. -> It means that angle is in range 0 to 89 deg.
+- 0 -> Angle is 90 deg.
+- Lower then 0 -> Angle is in range 91 to 180 deg.
+Also we must introduce 2 **Basis Vectors** { (1, 0), (0, 1) }, now look at the Picture:
+
+![Basis and Dir Vectors](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/80fb7734-0d01-41f0-b217-36bdc3863b77)
+
+Here we have b1 and b2 vectors, it is our global basis. Vector d1 is one of the direction vectors. We can do the Dot Product between each basis Vector b1 and b2 and the direction Vectors. After that we will get 2 scalars. When we Dot Product b1 and d1, we will get the positive result, since the angle between this vectors in range (0 to 89). Opposite, the result of Dot Product between b2 and d1 will be less then 0. And we can use this facts to determine what correct direction should be chosen for turn. 
+Using this principle we can determine the coorect movement direction.
+
+### Algorithm for King
+> [!NOTE]
+> In checkers Kings can move in any directions, diagonaly, unlimited. And it can make the Algorithm much complex. It also can perform multitakes. 
+
+
+> [!NOTE]
+> And you can notice, that we have some std::functions, it is used to be able to use lambda functions, outside this function to be able to process data outside. It is used in AI, to build **Graphs**.
+
+## Basic Principles of My AI
 
  My variant of **AI**, for now has only one difficulty mode. It's easy. But I am continue working on more complex and more smart **AI**. ain principles are^
- - I want my AI to find the piece with the best routes. 
+- I want my AI to find the piece with the best routes.
+
+To do this I need to iterate all the pieces of AI player, calculate all the possible turns for each one and determine the turn, that will lead to the Take of the piece,
+or, morover, several pieces. If there are no such turns, we choose piece randomly for move. 
+
+For this purpose I have created a special structure called turn.
+  
 
 
 
