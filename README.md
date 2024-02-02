@@ -237,20 +237,50 @@ Using this principle we can determine the coorect movement direction.
 > [!NOTE]
 > In checkers Kings can move in any directions, diagonaly, unlimited. And it can make the Algorithm much complex. It also can perform multitakes. 
 
+We can use the previous Concept of Recursive turn search. Lets see what I have created.
+- As in previous algorithm we start from the position of the current checker. We need to explore all the diagonal routes.
+- If we have possible take, we mark this checker, that it can be taken by adding it to the Checkers to be killed collection.
+- And if the checker for take detected we just start this Algorithm again from the position, behind the Checker to be Taken.
 
+It seems very simple, but when I started to implement it I ran into a problem. When the King perform the last take it should stop at the position behind the taken Checker. Moreover we have to explore more complex routes. Lets see pictures again:
+
+![King Principles 2](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/3f74e141-1280-4b17-9216-58afa83a8cb4)
+
+This picture is very complex from the first View. But it is exactly the way how we can find Checkers for taking. As I said, we start from the same position, where the king is situated, after that we explore 4 diagonal directions, each per one time. We use for cycle and call function recursively and pass there the current position + one of the direction Vectors for move, each for iteration. When we have no checkers in front, we continue to examine Cells in that direction, it is a straight line.
+But if the checker for take was found, we calculate two orthogonal Vectors to the move Vector, and start to examine all 4 directions form that points. For now we examine routes in 4 directions only once, when we are at the position where 2 orthogonal Vectors points at. If we look at previous picture, Green arrows are calls of recurtion function and they create routes, red arrows are routs when recursive callback takes place. Red crosses are places where we should stop examination. Orange arrows are the routes that also would be explored after deectiong of the checker for take. Here when we don't meet the new checker for taking, we need to remove Cells from possible turns collection, while recursive callBack takes place.
+
+## What are the so called "Collections"
+I have mentioned the word collections in previous chapters. I used them to store some temporary information. For example we need to store somewhere Checkers for takes, also we need to store Cells, that represent the possible turns. And, of course we required a storage for Cells that were selected by user. For all this requirements we can use linked list data structures, for example, for collecions I used **single linked list**. It is a data structure, that consists of Notes, that are linked with each other by pointers. The typical Note consists of data segment and the pointer to other Note. I used here template class and it gives us an opportunity to store data of various types. Also I implemented there functions for adding, deleting, and iterating the elements. Single linked lists has a good time complexity when we add elements to the begining of the list, also we can store the pointer to the end of list and make the time complexity good to. We will get O(1). Iteration has time complexity O(n), where n is a length of the list. But we need to use linked list in this situation, cause we don't know how many objects we will store. Arrays are no suitable in this case, they have a constant length after initialization, and, of course we can create the resize function, but better to use an unlimited collection. By the way we can use vector<T> from the STL library, but I decided to create my own linked_lists. In future I am going to replace single_linked list collection, where all possible turns stored by the circular_doubled linked list collection. It will make more comfortable the selection of the route for player. Now everything became more clear, and we can move to the most interesting section. 
 
 > [!NOTE]
 > And you can notice, that we have some std::functions, it is used to be able to use lambda functions, outside this function to be able to process data outside. It is used in AI, to build **Graphs**.
+> This approach allows us to get the information form the functions, while we explore all possible routs.
 
 ## Basic Principles of My AI
 
- My variant of **AI**, for now has only one difficulty mode. It's easy. But I am continue working on more complex and more smart **AI**. ain principles are^
+ My variant of **AI**, for now has only one difficulty mode. It's easy one. But I am continue working on more complex and more smart **AI**. The main principles are^
 - I want my AI to find the piece with the best routes.
 
 To do this I need to iterate all the pieces of AI player, calculate all the possible turns for each one and determine the turn, that will lead to the Take of the piece,
-or, morover, several pieces. If there are no such turns, we choose piece randomly for move. 
+or, moreover, several pieces. If there are no such turns, we choose piece randomly for move. 
 
-For this purpose I have created a special structure called turn.
+For this purpose I have created a special structure called turn. I made it as a template class. The type, that I used there is a Vctor. Cause the turn structure stores, some kind of a Graph. For optimization purposes we don't store the Graph itself there, I'll explain it later. Lets get back to the **turn**.
+It has fields, such as:
+- std::vector<T> m_ends; Here we store the coordinates of the ends of the routes. We need this for path reconstruction
+- std::map<T, T> m_prev_dictionary; Special data structure that stores intermediate path information for path reconstruction algorithm. 
+- T m_start; Position where the selected Checker is placed
+- static size_t m_id; Used to create an id for each new turn. We will increase this value by 1, when the turn structure will be created.
+- size_t m_current_id; Id of the current turn
+- size_t m_Takes; Count of takes in each turn
+- size_t m_eur_value; Will be used later in modifications
+- bool m_mini_max_used; Will be used later in modifications
+- linear_data_structures::single_linked_list<T> m_CheckersToBeKilledCoords; Stores Checkers for takes.
+- Vector<short> m_1KillPosition; Stores the position of the first detected checker for take.
+
+  ### About Graphs
+  This is a key concept for AI. Let me remind you what is it. Graphs are the data structures that consists of points. We can say, that it is the set of points. And this points are connected with each other by edges. It looks something like this:
+
+  [Graph Example](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.simplilearn.com%2Ftutorials%2Fdata-structure-tutorial%2Fgraphs-in-data-structure&psig=AOvVaw2Z0FUB2G0RvBG9GqIf8WFS&ust=1706999416282000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCLCh9MzbjYQDFQAAAAAdAAAAABAE)
   
 
 
