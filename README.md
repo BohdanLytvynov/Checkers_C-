@@ -278,9 +278,18 @@ It has fields, such as:
 - Vector<short> m_1KillPosition; Stores the position of the first detected checker for take.
 
   ### About Graphs
-  This is a key concept for AI. Let me remind you what is it. Graphs are the data structures that consists of points. We can say, that it is the set of points. And this points are connected with each other by edges. It looks something like this:
+  This is a key concept for AI. Let me remind you what is it. Graphs are the data structures that consists of points. Better to call them Verteces. We can say, that it is the set of Verteces. And this Verteces are connected with each other by edges. It looks something like this:
 
-  [Graph Example](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.simplilearn.com%2Ftutorials%2Fdata-structure-tutorial%2Fgraphs-in-data-structure&psig=AOvVaw2Z0FUB2G0RvBG9GqIf8WFS&ust=1706999416282000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCLCh9MzbjYQDFQAAAAAdAAAAABAE)
+  [Graph Example](https://www.simplilearn.com/ice9/free_resources_article_thumb/Graph%20Data%20Structure%20-%20Soni/what-is-graphs-in-data-structure.png)
+
+But how we can do this in C++. There are a three main ways how to do this.
+- Matrix representation of the graph. We create a set that relates to itself. And special rules define the connections between points. In this case we have a big space complexity. And, moreover, we again need the data structure, that can be expanded during the run_time. Matrices is a 2 dimensional arrays in C++, it means that, like the ordinary arrays, they are constant.
+- List of adjacent Verteces. The main idea here is that we can make the associative array, something simillar to Dictionaries, like in C# language. The key will be the Vertex, and the Value will be the linked list of Verteces that are adjacent to the key Vertex. A bit complex realization.
+- List of edges. I chose this one. Edge is a structure that has fields From and To, and in some cases the Weight. But we don't need to use Weight, lets say that Weight is 1. From is the name of the Vertex where the edge starts, and to is the name of the Vertex where the edge ends. For me it is an ideal approach for this case.
+
+For all Graph algorithms we need the mechanism of searching the adjecent Verteces. It is very simple. We have a Vertex, and we want to get the verteces, that are connected with this Vertex. We have to Iterate the List of edges, and compare the From value of the each Edge with our Vertex, and if they are equal, we take the To value of the Edge Structure. And put it all into the vector<T> from the STL library.
+
+As I said, using lambda functions, we can get all required values while turns are processing. And using this information we can build a graph. We use to determine the previous and the current point, after that we'll get an edge and add to the edge list. Also we need to cache the position of the first checker for Take. 
   
 
 
