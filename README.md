@@ -302,11 +302,46 @@ Now it is time to speak about this. Store Graph in memory in a form of List of E
 Now to create the propriate Prev_Dictionary we have to use one of the Graph traversal algorithms:
 - 1 Breadth first search
 - 2 Depth first search
+
 Both of them are suitable for this situation. I used Depth first search algorithm. It's time complexity is **O(V + E)**, where **V** is the Vertex count of the graph, in case of graph A, it'll be 3, and **E** is Egdes in case of graph A is 2. Mostly all over graphs will be Trees. They can have only one root, and only the connection in one direction between the Verteces. So the amount of edges can be described by this Formula: E = V - 1. By the way. the time complexity of the Breadth first search is the same.
 
 Depth first search algorithm uses recursive traversal. We start from the origin. It will be the Vertex 1 in the each graph. At first, we marked the 1 Vertex as visited:
 { {1, true}, {2, false}, {3, false} }, and then we search for adjacent Verteces: they are 2 and 3. After that we explore the 2 and the 3 Verteces recursively. During the each Vertex exploration we get the previous and the next Verteces. After that we can create the relation between them in Prev_Dictionary. When we are at the 1 Vertex, prev_dictionary will be like this: { { 1, 1 }, {2 , 0}, {3 , 0} }, since during the first call we pass the starting Vertex as parameters of the previous vertex and the current one. The second recursive call will give us: { { 1, 1 }, {2 , 1}, {3 , 0} }, since Verteces 2 and 1 connected with each other. And the last Call:
-{ { 1, 1 }, {2 , 1}, {3 , 1} }, it is the Prev_Dictionary for graph **A**. Here we can see the relations between the Verteces. from Vertex 1 we can move to itself or the 2 or the 3 Verteces. So it is the main Principle of DFS algorithm and main princeple of building Prev_Dictionary data Structure. Here is my own implementaation: [DFS Implementation](https://github.com/BohdanLytvynov/Checkers_C-/blob/main/Checkers/DataStructures.h) 
+{ { 1, 1 }, {2 , 1}, {3 , 1} }, it is the Prev_Dictionary for graph **A**. Here we can see the relations between the Verteces. from Vertex 1 we can move to itself or the 2 or the 3 Verteces. So it is the main Principle of DFS algorithm and main princeple of building Prev_Dictionary data Structure. Here is my own DFS implementaation: [DFS Implementation](https://github.com/BohdanLytvynov/Checkers_C-/blob/main/Checkers/DataStructures.h) . Also there you can find implementation of the Graph data structure.
+If we are dealing with a *"tree"* Graph we can also find the ends of the graph. For example, the ends of the graph **A** are 2 and 3. We will use this information later, when the path reconstruction progress occures. Now we have the start point, the end points, information about the amount of takes. So:
+- If we have found all possible turns, and if there are no turn with 1 or more takes, we will select the turn and the endpoint for path reconstruction randomly. We will use **randint() % count_of_elements**.
+- If we have the turn with 1 take, we will use this turn, start point and the position, behind the first take, to Ensure that AI will select the take sequence.
+- If we have the turn with multiple turns, we will use it.
+
+### Path Reconstruction
+
+For this purpose we will use static PathReconstruction function. It is situated in **DataStructures.h** file in the structure ***shortest_path_problem<T>***. And I decided to make the method for the path reconstruction static, since it doesn't use any invariant. It have accept the start point, end point, Prev_Dictionary data structure, and Empty Value. For this example let it be 0. In my game it is zero Vector (0, 0). Let me draw again the Prev_Dictionary for graph **A** from the previous picture.
+
+![PrevD](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/dd930651-4427-4abb-8c1d-4fd8569b535e)
+
+It is { { 1, 1 }, {2 , 1}, {3 , 1} } this one, but for better visualization I draw it like a table. 
+
+For path reconstruction we need to set the start point, in this case it will be 0, and the end point, for this case, it will be 2. We can use the for cycle with this conditions:
+
+for(auto vertex = endpoint; vertex != EmptyValue; vertex = Prev_Dictionary[vertex])
+{
+	Add the vertex to the path Collection;
+
+  	Check if vertes is start point. If so break the for loop;
+}
+
+We start form the 2. In this example the Empty Value is 0. It can be 0, if path here doesn't exist.2 is not 0, so we continue with expression:
+vertex = Prev_Dictionary[vertex], and Prev_Dictionary[2] will give us 1. again 1 is no 0, so we add 1 to the path. 1 is the start point so we break the loop. The result is the Collection {2, 1}. To use it Later we need reverse it, and we will get {1, 2}. The same principle is used for more complex graphs. 
+
+After all of this calculations we will get the Path collection, that consists of the Vectors, that are the positions for turn, iterate the path, and find all the Cells on this coordinates. Then we add all the Cells to a Selected Routes collection. Also we need to add Cells to the Checkers To be Killed Collection. 
+This was the hardest part of this program. Possible turns are added when we perform the path examination. 
+
+
+
+
+
+
+
 
 
 
