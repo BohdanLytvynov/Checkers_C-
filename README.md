@@ -290,7 +290,28 @@ But how we can do this in C++. There are a three main ways how to do this.
 For all Graph algorithms we need the mechanism of searching the adjecent Verteces. It is very simple. We have a Vertex, and we want to get the verteces, that are connected with this Vertex. We have to Iterate the List of edges, and compare the From value of the each Edge with our Vertex, and if they are equal, we take the To value of the Edge Structure. And put it all into the vector<T> from the STL library.
 
 As I said, using lambda functions, we can get all required values while turns are processing. And using this information we can build a graph. We use to determine the previous and the current point, after that we'll get an edge and add to the edge list. Also we need to cache the position of the first checker for Take. 
-  
+We can get sush types of graphs:
+
+![Checkers Graph 2](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/cf1b82ad-ff5c-4916-815b-a82b5a9febfd)
+
+Here is the examples of a graphs for the ordinary **Checkers**. For **Kings** graphs can be more complex. But all of them are **Direct Unweighted Graphs**. The process of graph building can be very complex. As I mentioned, we need two points the previous one and the current point. By creating an edge and connecting them with each other we can get the desired result, like that 3 Vertex graph that is situated in the left part of the previous picture. I marked it as an capital letter A. It is very simple graph. The problem can take place, when we have the first take. See graph **B**, there are 2 points, named 2 and 3. It is clear, that we have to skip 2 - nd point, and connect 1 point and the 3 directly, so we can say, that 2-nd point doesn't exist. Also we need to mark the first position Vector of the 1-st Checker for take. It is necessary for the seletion of the correct route to perform take. Also we can have the graph, that is simillar to graph **C**. Again, the mechanism of graph building is the same as in the graph **B**. Here we have to track the **MultiKill Cases**. When we have this case we need to update the previous Vertex for our Edge building mechanism. As I said, I used lambda functions to get proprite data for this. 
+
+### So Called Prev_Dictionary Data Structure.
+Now it is time to speak about this. Store Graph in memory in a form of List of Edges is rather space complex. Instead of this approach we can calculate the So called Prev_Dictionary. Using this we can calculate any path in a static Graph. Yeah if the graph changes, we need to recalculate the Prev_Dictionary. Frankly speaking, this data structure represent the relations between verteces of the graph. For this purposes it is better to use associative array or Dictionary. I want to remind it has Keys and Values. As keys we use all the Graph's Verteces that are exists. For example, for graph **A** Prev Dictionary will be: { { 1, 0 }, {2 , 0}, {3 , 0} }, as we see the Values are put to 0. Also we need to track visited Verteces. We can use again Dictionary, where keys are Verteces and the values are the bool values true and false. True, if we have alredy visited current Vertex and False if the Vertex hasn't been visited yet. It will be something like this: { {1, false}, {2, false}, {3, false} }. Ok. 
+
+Now to create the propriate Prev_Dictionary we have to use one of the Graph traversal algorithms:
+- 1 Breadth first search
+- 2 Depth first search
+Both of them are suitable for this situation. I used Depth first search algorithm. It's time complexity is **O(V + E)**, where **V** is the Vertex count of the graph, in case of graph A, it'll be 3, and **E** is Egdes in case of graph A is 2. Mostly all over graphs will be Trees. They can have only one root, and only the connection in one direction between the Verteces. So the amount of edges can be described by this Formula: E = V - 1. By the way. the time complexity of the Breadth first search is the same.
+
+Depth first search algorithm uses recursive traversal. We start from the origin. It will be the Vertex 1 in the each graph. At first, we marked the 1 Vertex as visited:
+{ {1, true}, {2, false}, {3, false} }, and then we search for adjacent Verteces: they are 2 and 3. After that we explore the 2 and the 3 Verteces recursively. During the each Vertex exploration we get the previous and the next Verteces. After that we can create the relation between them in Prev_Dictionary. When we are at the 1 Vertex, prev_dictionary will be like this: { { 1, 1 }, {2 , 0}, {3 , 0} }, since during the first call we pass the starting Vertex as parameters of the previous vertex and the current one. The second recursive call will give us: { { 1, 1 }, {2 , 1}, {3 , 0} }, since Verteces 2 and 1 connected with each other. And the last Call:
+{ { 1, 1 }, {2 , 1}, {3 , 1} }, it is the Prev_Dictionary for graph **A**. Here we can see the relations between the Verteces. from Vertex 1 we can move to itself or the 2 or the 3 Verteces. So it is the main Principle of DFS algorithm and main princeple of building Prev_Dictionary data Structure. Here is my own implementaation: [DFS Implementation](https://github.com/BohdanLytvynov/Checkers_C-/blob/main/Checkers/DataStructures.h) 
+
+
+
+ 
+
 
 
 
