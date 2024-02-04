@@ -327,14 +327,108 @@ for(auto vertex = endpoint; vertex != EmptyValue; vertex = Prev_Dictionary[verte
 {
 	Add the vertex to the path Collection;
 
-  	Check if vertes is start point. If so break the for loop;
+  	Check if vertex is start point. If so, break the for loop;
 }
 
 We start form the 2. In this example the Empty Value is 0. It can be 0, if path here doesn't exist.2 is not 0, so we continue with expression:
-vertex = Prev_Dictionary[vertex], and Prev_Dictionary[2] will give us 1. again 1 is no 0, so we add 1 to the path. 1 is the start point so we break the loop. The result is the Collection {2, 1}. To use it Later we need reverse it, and we will get {1, 2}. The same principle is used for more complex graphs. 
+vertex = Prev_Dictionary[vertex], and Prev_Dictionary[2] will give us 1. again 1 is no 0, so we add 1 to the path. 1 is the start point so we break the loop. The result is the Collection {2, 1}. To use it Later we need reverse it, and we will get {1, 2}. The same principle is used for more complex graphs. Here is the graphical Visualization of my calculations:
+
+![PrevD 2](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/a40aad78-e34c-45fb-a5ea-96ea6908cfb1)
 
 After all of this calculations we will get the Path collection, that consists of the Vectors, that are the positions for turn, iterate the path, and find all the Cells on this coordinates. Then we add all the Cells to a Selected Routes collection. Also we need to add Cells to the Checkers To be Killed Collection. 
 This was the hardest part of this program. Possible turns are added when we perform the path examination. 
+
+## Highlighting of Possible Routes
+
+After all the possible turns, checkers fot take were found. And in case when the player is not an AI we need to get the user input for route selection. If the player is AI all this data were got from the previous **SelectChecker** functions. The next function is HighLightPossibleTurns(). When the player is AI we need to focus the selected checker, to show the second player it. Also we need to show the route selected by AI, for this, we can use Highlight border behavior. Also we have to show all possible routes for the human user. Again we can use Border Highlight behavior. 
+
+## Selection of the Route
+
+This part of the algorithm must be executed if the current player is the human. In previous function all the possible routes were highlighted. And user must select the propriate route. This function is as simple as SelectChecker function. We wait for the inputs:
+- **A**. It moves the selection left.
+- **D**. It moves the selection right.
+- **S**. Makes the Selection.
+- **C**. Confirms the selection.
+- **R**. Gives an opportunity to make selection again.
+
+ When we get **A** or **D** inputs we have to unselect previous Cell and select Next one. Here for now I used singled linked list, in this case it's more suitable to use circular doubled linked list, cause using this data structure we can get the behavior as we have in Select checker function. For route selection we will use Select Cell behavior. As I mentioned earlier we woudld just change the background color when user will select the Cell by pressing **S**. In case of multitake presence, we will be able to select more then 1 Cell for Route. By pressing **S** for the first time we Select the Cell, if the Cell was selected earlier, pressing **S** for the second time will cancel the selection of this Cell.  If you don't agree with your selected route, you can press **R** key, and it will abort all the selections, and player can make them again. Then we write all the selected Cells to the Selected Routes Collection.
+
+## Move Principles
+
+Ok, the last one complex thing for understanding. In **ordinary game engines**, for example Unity, we have built in infrastructure for moving objects, What is move? Move is just simple redraw of the same object but in another position. Unity's translate infrastructure allows us simply to do it by adding the new Vector to the current position Vector. Moreover, there is a built in **collision checking system** in game engins. In console applications we have no built in infrastructure for constant moving of the objects and collision checking. Of course, we can implement this systems, it is not so hard to perform 2D Collision checking using **AABB** (**Axis Aligned Boundary Box**). But it will not work here. The reason for it, is that we don't have the coordinates of Checkers for take. And using Vector math I chave created a special system that can help us. Lets think about the tasks for the Move function.
+- It should be able to move piece. It can be done by simple changing the position Vector in a Checker structure. And after redraw it will be drawn at the other position.
+- It should perform takes of pieces. Here we can again encounter difficulties.
+- It should determine wether piece is a King or not. It is very simple too. We have to check if the piece is situated on the opposite side of the border.
+
+### Performing of Takes
+
+Here we can use Vector calculus again. Let me remind what we have: 
+- Selected routes list
+- Pieces for taking list.
+
+And we must use this data to perform correct takes. In my game it is not necessary to perform all the possible takes, so we can't just Kill all the pieces in the Pieces for taking collections. Even if the count of pieces for Take is 1, we also can't just kill this 1 piece, cause maybe user will chose another route, that will lead to the simple move without taking any piece. Look at this picture:
+
+![Take Sequence](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/599c24b0-500a-450f-a687-a419e6e84103)
+
+Assume, that we are playing for blue pieces. We can see here 2 possible routes. The first one is simple it is a simple move. The 2 , 3 , 4 is a multi Take sequence, and, moreover we can stop at the 2-n position. So how we can do this?
+
+We can iterate all the selected route Collection, visualy this collection is something like this if player decided to perform multi Take:
+
+![Take Sequence 2](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/c4b61231-b297-4486-aeb3-84267cb42aa4)
+
+Also remember that it is Cells, and they has their own position Vectors, that we can use. We start to iterate the Selected Routes Collection, take the position vector of it, and also we know the position Vector of the selected piece for a move. Here the picture. The orange Vector **s1** is the position vector of the Selected Route Cell, red Vector **r1** is the position Vector of the selected piece for move. We can see that s1 = r1 + d. Here d is the direction Vector, that shows the direction of the move. From here: d = s1 - r1. See the picture:
+
+![Vector Math for Take](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/a63b7694-e638-4218-b6ae-b1e7db43217c)
+
+Also we have to move the selected checker to the position of the first Selected route Collection's element, like this:
+
+![Take Sequence 5](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/30640a7d-a485-45c3-94c2-c6ef9d14b227)
+
+Here I tried to illustrate this. Blue arrow represents the moving of the Selected Checker for move. s1 - position Vector of the Selected Route COllection's Cell,
+r1 - previous position Vector of the selected Checker, now it is placed at the same position as the s1 Vector. 
+
+After that we have to get the same direction (**codirectional**) Vector, but with length 1, of course we can do this using Normalization, but in console, I want to remind, we have no float values. So ordinary Normalization won't work here. But we can find the direction vector, that is Codirectional to the Move direction Vector d. To do this:
+- Find the Colinear Vector
+- Find out wether it is Codirectional.
+
+### Colinearity
+Vectors are colinear if they are located in one Plane. In 3-d space we can use Mixed product of vectors. If is 0, it means that Vectors are located in one plane. And the same is correct for the 2 - d space. The Mixed product of Vectors in 3d space is the determinant of the matrix built of the Vector Coordinates. The same is true for the 2 - d space. Also, graphically we can represent it like this: 
+
+![Det Not equal to 0](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/56aba6ed-a1d0-4509-8b8b-28492933b0a9)
+
+Here we have 2 Vectors a and b, and they are not Colinear, and the Determinant of the Matrix, built of the a and b Vector Coordinates will be not 0. Some square exists. And it is a square of the paralelogramm, that is creaed by Vector a and vector b.
+Here is another situation:
+
+![Det equal to 0](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/50f42270-449b-45b1-b4a0-52c7108d0edc)
+
+Imagine that Vector a overlaps Vector b. Also a and b can point in the same direction or in the opposite directions. In this cases there will be no paralelogramm, and it's square will be 0, as like a determinant of the Matrix, built of the coordinates of the Vector a and b. 
+
+So, we need to build the Matrix, that consists of the coordinaates (x and y) and find the determinant of this Matrix. By the way, we can place vector coordinates as a rows or the columns of the Matrix, cause Matrix transposition doen't effect the Matrix determinant.
+
+### Codirectional
+Ok, we have found the Colinear Vector, as I said, it could be orientated in two opposite directions. But we want the Vector with the same directions. And here we can use a Dot Product again, since if two Vectors are Codirectional their Dot Product is greater then 0. 
+
+So we need compare all the direction Vectors with the Move direction Vector, and find 1 of the direction Vectors, that both Colinear (Determinant of the Matrix built of the Vector coordinates equals to 0) and Dot Product is greater then 0.
+
+After this calculations we'll get:
+
+![Take Sequence 4](https://github.com/BohdanLytvynov/Checkers_C-/assets/90960952/44d32c5e-cc76-43f0-9a10-c82e5c3ed23b)
+
+The light blue Vector dV1 is one of the direction vectors that is Codirectional to the Move direction Vector d. And now we can subtract dV1 vector from the s1 Vector, and we will get the position of the checker to be taken. So we can find the Checker from the Checkers to be Taken Collection, what the **Kill()** function must be called on.
+Here the way how the propriate checker for take can be found.
+After the move performed we check can the piece become the King, if so we set the m_isDamka variable to true, and after redraw this piece will be rendered as the King.
+
+
+## Prepare for Move of the Next Palyer
+
+To do this we just need to clear the Collections that store the Possible turns, Selected Routes and Checkers to be Taken. And also all Focused or Selected UI elements should be reset to their initial state.
+
+## End Game Conditions
+It is the most easy part of the game logic. We have just to count the amount of black and white pieces on the board. The player, who has 0 pieces is a loser, and another player is a winner.
+
+And after that, if the game hasn't finished yet, we start the new loop of the game cycle. 
+
+
 
 
 
