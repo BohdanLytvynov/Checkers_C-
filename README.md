@@ -428,8 +428,8 @@ It is the most easy part of the game logic. We have just to count the amount of 
 
 And after that, if the game hasn't finished yet, we start the new loop of the game cycle. 
 
-
-
+# Plance for Future
+I'll continue the modifying of this project. And all the new modifications will be reflected in this readme later.
 
 
 
